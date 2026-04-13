@@ -10,9 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     
-    <!-- Charting Library -->
-    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js"></script>
-    
     <style>
         * {
             margin: 0;
@@ -21,24 +18,23 @@
         }
 
         body {
-            background: #000000;
+            background: #0a0a0a;
             font-family: -apple-system, 'Segoe UI', 'Inter', monospace;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Professional Terminal Layout */
         .terminal {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            background: #000000;
+            background: #0a0a0a;
         }
 
         /* Top Bar */
         .top-bar {
-            background: #0a0a0a;
-            border-bottom: 1px solid #1a1a1a;
+            background: #0d0d0d;
+            border-bottom: 1px solid #1f1f1f;
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
@@ -50,20 +46,21 @@
         .logo {
             font-size: 20px;
             font-weight: 700;
-            background: linear-gradient(135deg, #ffffff, #888888);
+            background: linear-gradient(135deg, #ffffff, #00ff88);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
 
         .logo-sub {
-            font-size: 10px;
+            font-size: 9px;
             color: #444;
+            margin-left: 5px;
         }
 
         .search-container {
             position: relative;
-            width: 300px;
+            width: 280px;
         }
 
         .search-input {
@@ -71,9 +68,9 @@
             background: #1a1a1a;
             border: 1px solid #2a2a2a;
             border-radius: 8px;
-            padding: 10px 15px;
+            padding: 8px 12px;
             color: #fff;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .search-input:focus {
@@ -100,7 +97,7 @@
         }
 
         .search-result-item {
-            padding: 10px 15px;
+            padding: 10px 12px;
             cursor: pointer;
             border-bottom: 1px solid #2a2a2a;
         }
@@ -111,7 +108,7 @@
 
         .user-info {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
         }
 
@@ -120,6 +117,7 @@
             padding: 6px 12px;
             border-radius: 8px;
             font-family: monospace;
+            font-size: 14px;
         }
 
         .topup-btn {
@@ -150,22 +148,22 @@
             background: #1a1a1a;
         }
 
-        /* Left Panel - Watchlist */
+        /* Left Panel */
         .left-panel {
-            width: 280px;
-            background: #0a0a0a;
+            width: 260px;
+            background: #0d0d0d;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
         }
 
         .panel-header {
-            padding: 15px;
-            border-bottom: 1px solid #1a1a1a;
+            padding: 12px 15px;
+            border-bottom: 1px solid #1f1f1f;
         }
 
         .panel-header h3 {
-            font-size: 12px;
+            font-size: 11px;
             color: #666;
             letter-spacing: 1px;
         }
@@ -179,7 +177,7 @@
         }
 
         .watchlist-item:hover {
-            background: #111;
+            background: #141414;
         }
 
         .watchlist-item.active {
@@ -187,35 +185,42 @@
             border-left: 2px solid #00ff88;
         }
 
-        /* Center Panel - Chart */
+        .positive { color: #00ff88; }
+        .negative { color: #ff3355; }
+
+        /* Center Panel */
         .center-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #000000;
+            background: #0a0a0a;
+            min-width: 0;
         }
 
         .chart-header {
-            padding: 10px 15px;
-            border-bottom: 1px solid #1a1a1a;
+            padding: 8px 15px;
+            border-bottom: 1px solid #1f1f1f;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .current-symbol {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
         }
 
         .current-price {
-            font-size: 24px;
+            font-size: 22px;
             font-family: monospace;
+            margin-left: 12px;
         }
 
         .timeframes {
             display: flex;
-            gap: 5px;
+            gap: 4px;
         }
 
         .tf-btn {
@@ -242,9 +247,10 @@
             background: #1a1a1a;
             border: 1px solid #2a2a2a;
             color: #fff;
-            padding: 6px 12px;
+            padding: 4px 12px;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 12px;
         }
 
         .indicator-menu {
@@ -254,7 +260,7 @@
             background: #1a1a1a;
             border: 1px solid #2a2a2a;
             border-radius: 8px;
-            width: 250px;
+            width: 220px;
             display: none;
             z-index: 100;
         }
@@ -264,7 +270,7 @@
         }
 
         .indicator-search {
-            padding: 10px;
+            padding: 8px;
             border-bottom: 1px solid #2a2a2a;
         }
 
@@ -285,6 +291,7 @@
         .indicator-option {
             padding: 8px 12px;
             cursor: pointer;
+            font-size: 12px;
         }
 
         .indicator-option:hover {
@@ -294,17 +301,19 @@
         .chart-container {
             flex: 1;
             position: relative;
+            min-height: 0;
         }
 
         #chart {
             width: 100%;
             height: 100%;
+            min-height: 400px;
         }
 
-        /* Right Panel - Trading */
+        /* Right Panel */
         .right-panel {
             width: 320px;
-            background: #0a0a0a;
+            background: #0d0d0d;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -324,11 +333,17 @@
             color: #888;
             border-radius: 6px;
             cursor: pointer;
+            font-weight: 600;
         }
 
         .trade-tab.active {
             background: #00ff88;
             color: #000;
+        }
+
+        .trade-tab.sell.active {
+            background: #ff3355;
+            color: #fff;
         }
 
         .trade-form {
@@ -341,7 +356,7 @@
 
         .input-group label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
             margin-bottom: 4px;
         }
@@ -376,54 +391,44 @@
             color: #fff;
         }
 
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
             padding: 12px;
-            border-top: 1px solid #1a1a1a;
+            border-top: 1px solid #1f1f1f;
         }
 
         .stat-card {
-            background: #1a1a1a;
-            padding: 10px;
+            background: #141414;
+            padding: 8px;
             border-radius: 8px;
             text-align: center;
         }
 
         .stat-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #666;
         }
 
         .stat-value {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
         }
 
-        .stat-value.positive {
-            color: #00ff88;
-        }
-
-        .stat-value.negative {
-            color: #ff3355;
-        }
-
-        /* Positions & History */
         .section {
             padding: 12px;
-            border-top: 1px solid #1a1a1a;
+            border-top: 1px solid #1f1f1f;
         }
 
         .section-title {
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
             margin-bottom: 8px;
         }
 
         .position-item, .history-item {
-            background: #1a1a1a;
+            background: #141414;
             border-radius: 6px;
             padding: 8px;
             margin-bottom: 6px;
@@ -435,7 +440,30 @@
             font-size: 12px;
         }
 
-        /* Modal */
+        .status-bar {
+            background: #0d0d0d;
+            border-top: 1px solid #1f1f1f;
+            padding: 5px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #555;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -476,47 +504,16 @@
             color: #fff;
             cursor: pointer;
         }
-
-        /* Status Bar */
-        .status-bar {
-            background: #0a0a0a;
-            border-top: 1px solid #1a1a1a;
-            padding: 6px 20px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: #555;
-        }
-
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #00ff88;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Login Modal */
-        .login-form input {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #0a0a0a;
-            border: 1px solid #2a2a2a;
-            border-radius: 6px;
-            color: #fff;
-        }
     </style>
 </head>
 <body>
     <div class="terminal" id="app">
-        <!-- Will be populated by JS -->
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+            <div style="text-align: center;">
+                <div style="font-size: 24px; margin-bottom: 10px;">🚀 Loading Atharva Capital...</div>
+                <div style="width: 40px; height: 40px; border: 2px solid #1a1a1a; border-top-color: #00ff88; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -531,9 +528,14 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
+        let db, auth;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+        } catch(e) {
+            console.warn('Firebase not configured, using local storage only');
+        }
 
         // ============ GLOBAL STATE ============
         let currentUser = null;
@@ -547,25 +549,23 @@
         let selectedCoin = 'BTCUSDT';
         let selectedCoinName = 'BTC';
         let currentPrice = 0;
+        let currentChange24h = 0;
         let marketPrices = {};
         let allCoins = [];
         let chart = null;
         let candlestickSeries = null;
         let currentInterval = '1h';
         let activeIndicators = [];
+        let chartInitialized = false;
         
-        // ============ LOAD ALL COINS FROM BINANCE ============
+        // ============ LOAD ALL COINS ============
         async function loadAllCoins() {
             try {
                 const response = await fetch('https://api.binance.com/api/v3/exchangeInfo');
                 const data = await response.json();
                 allCoins = data.symbols
                     .filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING')
-                    .map(s => ({
-                        symbol: s.symbol,
-                        baseAsset: s.baseAsset,
-                        quoteAsset: s.quoteAsset
-                    }))
+                    .map(s => ({ symbol: s.symbol, baseAsset: s.baseAsset }))
                     .slice(0, 500);
                 return allCoins;
             } catch(e) {
@@ -576,10 +576,10 @@
         
         // ============ SEARCH COINS ============
         function searchCoins(query) {
-            if (!query || query.length < 1) return [];
+            if (!query || query.length < 2) return [];
             return allCoins
                 .filter(coin => coin.symbol.toLowerCase().includes(query.toLowerCase()))
-                .slice(0, 20);
+                .slice(0, 15);
         }
         
         // ============ FETCH LIVE PRICES ============
@@ -598,11 +598,22 @@
                 });
                 if (marketPrices[selectedCoin]) {
                     currentPrice = marketPrices[selectedCoin].price;
+                    currentChange24h = marketPrices[selectedCoin].change;
                 }
-                renderUI();
+                updatePriceDisplay();
                 return marketPrices;
             } catch(e) {
                 console.error('Price fetch error:', e);
+            }
+        }
+        
+        function updatePriceDisplay() {
+            const priceEl = document.getElementById('currentPriceDisplay');
+            const changeEl = document.getElementById('currentChangeDisplay');
+            if (priceEl) priceEl.innerText = `$${currentPrice?.toLocaleString() || '—'}`;
+            if (changeEl) {
+                changeEl.innerText = `${currentChange24h >= 0 ? '+' : ''}${currentChange24h?.toFixed(2) || '0'}%`;
+                changeEl.className = currentChange24h >= 0 ? 'positive' : 'negative';
             }
         }
         
@@ -618,8 +629,10 @@
                     low: parseFloat(k[3]),
                     close: parseFloat(k[4])
                 }));
-                if (candlestickSeries) {
+                
+                if (candlestickSeries && chartData.length > 0) {
                     candlestickSeries.setData(chartData);
+                    chart?.timeScale().fitContent();
                 }
                 return chartData;
             } catch(e) {
@@ -628,80 +641,141 @@
         }
         
         // ============ INITIALIZE CHART ============
-        function initChart() {
+        async function initChart() {
             const container = document.getElementById('chart');
-            if (!container) return;
+            if (!container) {
+                console.log('Chart container not found');
+                return false;
+            }
             
-            chart = LightweightCharts.createChart(container, {
-                layout: { background: { color: '#000000' }, textColor: '#888888' },
-                grid: { vertLines: { color: '#111111' }, horzLines: { color: '#111111' } },
-                crosshair: { mode: 0, vertLine: { color: '#333' }, horzLine: { color: '#333' } },
-                rightPriceScale: { borderColor: '#1a1a1a' },
-                timeScale: { borderColor: '#1a1a1a', timeVisible: true },
-                width: container.clientWidth,
-                height: 400
-            });
+            // Wait for library to be available
+            if (typeof LightweightCharts === 'undefined') {
+                console.log('Waiting for LightweightCharts...');
+                setTimeout(initChart, 500);
+                return false;
+            }
             
-            candlestickSeries = chart.addCandlestickSeries({
-                upColor: '#00ff88',
-                downColor: '#ff3355',
-                borderUpColor: '#00ff88',
-                borderDownColor: '#ff3355',
-                wickUpColor: '#00ff88',
-                wickDownColor: '#ff3355'
-            });
-            
-            window.addEventListener('resize', () => {
-                if (chart && container) {
-                    chart.applyOptions({ width: container.clientWidth });
-                }
-            });
-            
-            fetchChartData();
+            try {
+                chart = LightweightCharts.createChart(container, {
+                    layout: { background: { color: '#0a0a0a' }, textColor: '#888888' },
+                    grid: { vertLines: { color: '#1a1a1a' }, horzLines: { color: '#1a1a1a' } },
+                    crosshair: { mode: 0, vertLine: { color: '#333', width: 1, style: 2 }, horzLine: { color: '#333', width: 1, style: 2 } },
+                    rightPriceScale: { borderColor: '#2a2a2a', textColor: '#888' },
+                    timeScale: { borderColor: '#2a2a2a', textColor: '#888', timeVisible: true, secondsVisible: false },
+                    width: container.clientWidth,
+                    height: 450
+                });
+                
+                candlestickSeries = chart.addCandlestickSeries({
+                    upColor: '#00ff88',
+                    downColor: '#ff3355',
+                    borderUpColor: '#00ff88',
+                    borderDownColor: '#ff3355',
+                    wickUpColor: '#00ff88',
+                    wickDownColor: '#ff3355'
+                });
+                
+                window.addEventListener('resize', () => {
+                    if (chart && container) {
+                        chart.applyOptions({ width: container.clientWidth });
+                    }
+                });
+                
+                await fetchChartData();
+                chartInitialized = true;
+                return true;
+            } catch(e) {
+                console.error('Chart init error:', e);
+                return false;
+            }
         }
         
         // ============ ADD INDICATOR ============
-        function addIndicator(indicatorName) {
+        async function addIndicator(indicatorName) {
             if (!chart) return;
             
-            switch(indicatorName) {
-                case 'RSI':
-                    const rsiSeries = chart.addLineSeries({ color: '#aa00ff', lineWidth: 1, title: 'RSI' });
-                    // Calculate RSI from chart data
-                    break;
-                case 'MACD':
-                    const macdSeries = chart.addLineSeries({ color: '#ffaa00', lineWidth: 1, title: 'MACD' });
-                    break;
-                case 'EMA 9':
-                    const ema9Series = chart.addLineSeries({ color: '#00aaff', lineWidth: 1, title: 'EMA 9' });
-                    break;
-                case 'EMA 20':
-                    const ema20Series = chart.addLineSeries({ color: '#ffaa00', lineWidth: 1, title: 'EMA 20' });
-                    break;
-                case 'EMA 50':
-                    const ema50Series = chart.addLineSeries({ color: '#ff66cc', lineWidth: 1, title: 'EMA 50' });
-                    break;
-                case 'Bollinger Bands':
-                    const bbUpper = chart.addLineSeries({ color: '#888888', lineWidth: 1, title: 'BB Upper' });
-                    const bbLower = chart.addLineSeries({ color: '#888888', lineWidth: 1, title: 'BB Lower' });
-                    break;
-                case 'Volume':
-                    const volumeSeries = chart.addHistogramSeries({ color: '#333333', priceFormat: { type: 'volume' } });
-                    break;
+            try {
+                switch(indicatorName) {
+                    case 'RSI':
+                        const rsiData = await calculateRSI();
+                        if (rsiData) {
+                            const rsiSeries = chart.addLineSeries({ color: '#aa00ff', lineWidth: 1, title: 'RSI' });
+                            rsiSeries.setData(rsiData);
+                        }
+                        break;
+                    case 'EMA 9':
+                        const ema9Data = await calculateEMA(9);
+                        if (ema9Data) {
+                            const ema9Series = chart.addLineSeries({ color: '#00aaff', lineWidth: 1, title: 'EMA 9' });
+                            ema9Series.setData(ema9Data);
+                        }
+                        break;
+                    case 'EMA 20':
+                        const ema20Data = await calculateEMA(20);
+                        if (ema20Data) {
+                            const ema20Series = chart.addLineSeries({ color: '#ffaa00', lineWidth: 1, title: 'EMA 20' });
+                            ema20Series.setData(ema20Data);
+                        }
+                        break;
+                    case 'EMA 50':
+                        const ema50Data = await calculateEMA(50);
+                        if (ema50Data) {
+                            const ema50Series = chart.addLineSeries({ color: '#ff66cc', lineWidth: 1, title: 'EMA 50' });
+                            ema50Series.setData(ema50Data);
+                        }
+                        break;
+                }
+                
+                if (!activeIndicators.includes(indicatorName)) {
+                    activeIndicators.push(indicatorName);
+                }
+            } catch(e) {
+                console.error('Indicator error:', e);
+            }
+        }
+        
+        async function calculateEMA(period) {
+            const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${selectedCoin}&interval=${currentInterval}&limit=200`);
+            const data = await response.json();
+            const closes = data.map(k => parseFloat(k[4]));
+            
+            let k = 2 / (period + 1);
+            let ema = [closes[0]];
+            for (let i = 1; i < closes.length; i++) {
+                ema.push(closes[i] * k + ema[i-1] * (1 - k));
             }
             
-            if (!activeIndicators.includes(indicatorName)) {
-                activeIndicators.push(indicatorName);
+            return data.map((k, i) => ({
+                time: k[0] / 1000,
+                value: ema[i]
+            }));
+        }
+        
+        async function calculateRSI(period = 14) {
+            const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${selectedCoin}&interval=${currentInterval}&limit=200`);
+            const data = await response.json();
+            const closes = data.map(k => parseFloat(k[4]));
+            
+            let gains = 0, losses = 0;
+            for (let i = 1; i <= period; i++) {
+                let diff = closes[i] - closes[i-1];
+                if (diff >= 0) gains += diff;
+                else losses -= diff;
             }
+            
+            let avgGain = gains / period;
+            let avgLoss = losses / period;
+            let rs = avgGain / avgLoss;
+            let rsi = 100 - (100 / (1 + rs));
+            
+            return data.slice(period).map((k, i) => ({
+                time: k[0] / 1000,
+                value: rsi
+            }));
         }
         
         // ============ EXECUTE TRADE ============
         async function executeTrade(side) {
-            if (!currentUser) {
-                alert('Please login first!');
-                return;
-            }
-            
             const amount = parseFloat(document.getElementById('tradeAmount')?.value || 0);
             const sl = parseFloat(document.getElementById('stopLoss')?.value || 0);
             const tp = parseFloat(document.getElementById('takeProfit')?.value || 0);
@@ -715,7 +789,7 @@
             
             if (side === 'buy') {
                 if (totalCost > userData.balance) {
-                    alert('Insufficient balance!');
+                    alert(`Insufficient balance! Available: $${userData.balance.toFixed(2)}`);
                     return;
                 }
                 
@@ -751,44 +825,37 @@
                 userData.balance += position.amount * currentPrice;
                 userData.positions = userData.positions.filter(p => p.id !== position.id);
                 
-                // Show emotion modal
                 showEmotionModal();
             }
             
-            // Save to Firebase
             await saveUserData();
-            renderUI();
+            renderRightPanel();
             
             document.getElementById('tradeAmount').value = '';
             document.getElementById('stopLoss').value = '';
             document.getElementById('takeProfit').value = '';
         }
         
-        // ============ EMOTION MODAL ============
         function showEmotionModal() {
             const modal = document.getElementById('emotionModal');
-            modal.classList.add('show');
-            
-            window.submitEmotion = async (emotion) => {
-                userData.emotions.push({
-                    emotion: emotion,
-                    timestamp: new Date().toISOString()
-                });
-                await saveUserData();
-                modal.classList.remove('show');
-            };
+            if (modal) modal.classList.add('show');
         }
         
-        // ============ TOP UP BALANCE ============
+        async function submitEmotion(emotion) {
+            userData.emotions.push({ emotion, timestamp: new Date().toISOString() });
+            await saveUserData();
+            document.getElementById('emotionModal')?.classList.remove('show');
+        }
+        
         async function topUpBalance() {
             userData.balance += 1000;
             await saveUserData();
-            renderUI();
+            renderRightPanel();
         }
         
-        // ============ FIREBASE OPERATIONS ============
+        // ============ FIREBASE ============
         async function saveUserData() {
-            if (!currentUser) return;
+            if (!currentUser || !db) return;
             await db.collection('users').doc(currentUser.uid).set({
                 balance: userData.balance,
                 positions: userData.positions,
@@ -799,6 +866,7 @@
         }
         
         async function loadUserData(uid) {
+            if (!db) return;
             const doc = await db.collection('users').doc(uid).get();
             if (doc.exists) {
                 const data = doc.data();
@@ -807,76 +875,195 @@
                 userData.tradeHistory = data.tradeHistory || [];
                 userData.emotions = data.emotions || [];
             } else {
-                userData = {
-                    balance: 10000,
-                    positions: [],
-                    tradeHistory: [],
-                    emotions: []
-                };
+                userData = { balance: 10000, positions: [], tradeHistory: [], emotions: [] };
             }
-            renderUI();
         }
         
-        // ============ AUTHENTICATION ============
+        // ============ AUTH ============
         async function login(email, password) {
+            if (!auth) { alert('Firebase not configured'); return; }
             try {
                 await auth.signInWithEmailAndPassword(email, password);
                 currentUser = auth.currentUser;
                 await loadUserData(currentUser.uid);
                 renderUI();
-                return true;
             } catch(e) {
                 alert('Login failed: ' + e.message);
-                return false;
             }
         }
         
         async function signup(email, password) {
+            if (!auth) { alert('Firebase not configured'); return; }
             try {
                 await auth.createUserWithEmailAndPassword(email, password);
                 currentUser = auth.currentUser;
                 await saveUserData();
                 renderUI();
-                return true;
             } catch(e) {
                 alert('Signup failed: ' + e.message);
-                return false;
             }
         }
         
         function logout() {
-            auth.signOut();
+            auth?.signOut();
             currentUser = null;
             userData = { balance: 10000, positions: [], tradeHistory: [], emotions: [] };
             renderUI();
         }
         
-        // ============ STATS CALCULATIONS ============
+        // ============ STATS ============
         function calculateStats() {
             const trades = userData.tradeHistory;
             const winningTrades = trades.filter(t => t.pnl > 0);
-            const losingTrades = trades.filter(t => t.pnl < 0);
             const totalPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
             const winRate = trades.length > 0 ? (winningTrades.length / trades.length * 100) : 0;
             const bestTrade = trades.length > 0 ? Math.max(...trades.map(t => t.pnl)) : 0;
             const worstTrade = trades.length > 0 ? Math.min(...trades.map(t => t.pnl)) : 0;
-            const avgWin = winningTrades.length > 0 ? winningTrades.reduce((s,t) => s + t.pnl, 0) / winningTrades.length : 0;
-            const avgLoss = losingTrades.length > 0 ? losingTrades.reduce((s,t) => s + t.pnl, 0) / losingTrades.length : 0;
-            
-            return { totalPnL, winRate, bestTrade, worstTrade, avgWin, avgLoss, totalTrades: trades.length };
+            return { totalPnL, winRate, bestTrade, worstTrade, totalTrades: trades.length };
         }
         
-        // ============ RENDER UI ============
+        // ============ RENDER FUNCTIONS ============
+        function renderWatchlist() {
+            const container = document.getElementById('watchlistContainer');
+            if (!container) return;
+            
+            const topCoins = Object.keys(marketPrices).slice(0, 30);
+            container.innerHTML = topCoins.map(symbol => `
+                <div class="watchlist-item ${selectedCoin === symbol ? 'active' : ''}" onclick="selectCoin('${symbol}')">
+                    <div>
+                        <div style="font-weight:500;">${symbol.replace('USDT', '')}</div>
+                        <div style="font-size:9px; color:#555;">${symbol}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div>$${marketPrices[symbol]?.price?.toLocaleString() || '—'}</div>
+                        <div class="${marketPrices[symbol]?.change >= 0 ? 'positive' : 'negative'}" style="font-size:10px;">
+                            ${marketPrices[symbol]?.change >= 0 ? '+' : ''}${marketPrices[symbol]?.change?.toFixed(2) || '0'}%
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderRightPanel() {
+            const stats = calculateStats();
+            const positionsContainer = document.getElementById('positionsContainer');
+            const historyContainer = document.getElementById('historyContainer');
+            const balanceEl = document.getElementById('balanceDisplay');
+            
+            if (balanceEl) balanceEl.innerText = `$${userData.balance.toFixed(2)}`;
+            if (positionsContainer) {
+                positionsContainer.innerHTML = userData.positions.length === 0 ? 
+                    '<div style="text-align:center; color:#555; padding:20px;">No open positions</div>' :
+                    userData.positions.map(pos => {
+                        const current = marketPrices[pos.coin]?.price || pos.entryPrice;
+                        const pnl = (current - pos.entryPrice) * pos.amount;
+                        return `
+                            <div class="position-item">
+                                <div class="position-row">
+                                    <span>${pos.coinName}</span>
+                                    <span class="${pnl >= 0 ? 'positive' : 'negative'}">${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</span>
+                                </div>
+                                <div class="position-row" style="font-size:10px; color:#555;">
+                                    <span>Entry: $${pos.entryPrice.toFixed(2)}</span>
+                                    <span>Amt: ${pos.amount.toFixed(6)}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+            }
+            
+            if (historyContainer) {
+                historyContainer.innerHTML = userData.tradeHistory.length === 0 ?
+                    '<div style="text-align:center; color:#555; padding:20px;">No trades yet</div>' :
+                    userData.tradeHistory.slice(0, 10).map(trade => `
+                        <div class="history-item">
+                            <div class="history-row">
+                                <span>${trade.coinName}</span>
+                                <span class="${trade.pnl >= 0 ? 'positive' : 'negative'}">${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}</span>
+                            </div>
+                            <div class="history-row" style="font-size:9px; color:#555;">
+                                <span>Entry: $${trade.entryPrice?.toFixed(2)}</span>
+                                <span>Exit: $${trade.exitPrice?.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+            
+            // Update stats
+            document.getElementById('statTotalPnL').innerHTML = `${stats.totalPnL >= 0 ? '+' : ''}$${stats.totalPnL.toFixed(2)}`;
+            document.getElementById('statWinRate').innerHTML = `${stats.winRate.toFixed(1)}%`;
+            document.getElementById('statBestTrade').innerHTML = `+$${stats.bestTrade.toFixed(2)}`;
+            document.getElementById('statWorstTrade').innerHTML = `$${stats.worstTrade.toFixed(2)}`;
+            document.getElementById('statTotalTrades').innerHTML = stats.totalTrades;
+        }
+        
+        // ============ SELECT COIN ============
+        window.selectCoin = async (symbol) => {
+            selectedCoin = symbol;
+            selectedCoinName = symbol.replace('USDT', '');
+            document.getElementById('currentSymbolDisplay').innerHTML = `${selectedCoinName}/USDT`;
+            document.getElementById('executeBtn').innerHTML = `BUY ${selectedCoinName}`;
+            await fetchChartData();
+            renderWatchlist();
+        };
+        
+        window.changeTimeframe = (tf) => {
+            currentInterval = tf;
+            document.querySelectorAll('.tf-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tf-btn[onclick="changeTimeframe('${tf}')"]`)?.classList.add('active');
+            fetchChartData();
+        };
+        
+        window.setTradeSide = (side) => {
+            const buyTab = document.getElementById('buyTab');
+            const sellTab = document.getElementById('sellTab');
+            const execBtn = document.getElementById('executeBtn');
+            
+            if (side === 'buy') {
+                buyTab.classList.add('active');
+                sellTab.classList.remove('active');
+                execBtn.className = 'execute-btn buy';
+                execBtn.innerHTML = `BUY ${selectedCoinName}`;
+                execBtn.onclick = () => executeTrade('buy');
+            } else {
+                sellTab.classList.add('active');
+                buyTab.classList.remove('active');
+                execBtn.className = 'execute-btn sell';
+                execBtn.innerHTML = `SELL ${selectedCoinName}`;
+                execBtn.onclick = () => executeTrade('sell');
+            }
+        };
+        
+        window.toggleIndicatorMenu = () => {
+            document.getElementById('indicatorMenu')?.classList.toggle('show');
+        };
+        
+        window.filterIndicators = () => {
+            const search = document.getElementById('indicatorSearch')?.value.toLowerCase();
+            document.querySelectorAll('.indicator-option').forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(search) ? 'block' : 'none';
+            });
+        };
+        
+        window.showLoginModal = () => {
+            const modal = document.getElementById('loginModal');
+            if (modal) modal.classList.add('show');
+        };
+        
+        window.closeModal = (id) => {
+            document.getElementById(id)?.classList.remove('show');
+        };
+        
+        // ============ MAIN RENDER ============
         async function renderUI() {
             const stats = calculateStats();
-            const totalValue = userData.balance + userData.positions.reduce((sum, p) => sum + (p.amount * (marketPrices[p.coin]?.price || p.entryPrice)), 0);
-            
             const app = document.getElementById('app');
+            
             app.innerHTML = `
                 <div class="top-bar">
                     <div>
                         <span class="logo">▲ ATHARVA CAPITAL</span>
-                        <span class="logo-sub"> by Atharva Darshanwar</span>
+                        <span class="logo-sub">by Atharva Darshanwar</span>
                     </div>
                     <div class="search-container">
                         <input type="text" class="search-input" id="searchInput" placeholder="Search 500+ coins... BTC, ETH, SOL..." autocomplete="off">
@@ -884,47 +1071,28 @@
                     </div>
                     <div class="user-info">
                         ${currentUser ? `
-                            <span class="balance">$${userData.balance.toFixed(2)}</span>
+                            <span class="balance" id="balanceDisplay">$${userData.balance.toFixed(2)}</span>
                             <button class="topup-btn" onclick="topUpBalance()">+$1000</button>
                             <button class="auth-btn" onclick="logout()">Logout</button>
                         ` : `
                             <button class="auth-btn" onclick="showLoginModal()">Login</button>
-                            <button class="auth-btn" onclick="showSignupModal()">Signup</button>
+                            <button class="auth-btn" onclick="signup(prompt('Email:'), prompt('Password:'))">Signup</button>
                         `}
                     </div>
                 </div>
                 
                 <div class="main-layout">
                     <div class="left-panel">
-                        <div class="panel-header">
-                            <h3>WATCHLIST</h3>
-                        </div>
-                        <div id="watchlistContainer">
-                            ${Object.keys(marketPrices).slice(0, 20).map(symbol => `
-                                <div class="watchlist-item ${selectedCoin === symbol ? 'active' : ''}" onclick="selectCoin('${symbol}')">
-                                    <div>
-                                        <div>${symbol.replace('USDT', '')}</div>
-                                        <div style="font-size:10px; color:#666;">${symbol}</div>
-                                    </div>
-                                    <div style="text-align:right">
-                                        <div>$${marketPrices[symbol]?.price?.toLocaleString() || '—'}</div>
-                                        <div class="${marketPrices[symbol]?.change >= 0 ? 'positive' : 'negative'}" style="font-size:10px;">
-                                            ${marketPrices[symbol]?.change >= 0 ? '+' : ''}${marketPrices[symbol]?.change?.toFixed(2) || '0'}%
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
+                        <div class="panel-header"><h3>WATCHLIST</h3></div>
+                        <div id="watchlistContainer"></div>
                     </div>
                     
                     <div class="center-panel">
                         <div class="chart-header">
                             <div>
-                                <span class="current-symbol">${selectedCoinName}/USDT</span>
-                                <span class="current-price" style="margin-left:15px;">$${currentPrice.toLocaleString()}</span>
-                                <span class="${marketPrices[selectedCoin]?.change >= 0 ? 'positive' : 'negative'}" style="margin-left:10px;">
-                                    ${marketPrices[selectedCoin]?.change >= 0 ? '+' : ''}${marketPrices[selectedCoin]?.change?.toFixed(2) || '0'}%
-                                </span>
+                                <span class="current-symbol" id="currentSymbolDisplay">${selectedCoinName}/USDT</span>
+                                <span class="current-price" id="currentPriceDisplay">$${currentPrice?.toLocaleString() || '—'}</span>
+                                <span id="currentChangeDisplay" class="${currentChange24h >= 0 ? 'positive' : 'negative'}">${currentChange24h >= 0 ? '+' : ''}${currentChange24h?.toFixed(2) || '0'}%</span>
                             </div>
                             <div style="display:flex; gap:10px;">
                                 <div class="timeframes">
@@ -940,7 +1108,7 @@
                                         </div>
                                         <div class="indicator-list" id="indicatorList">
                                             ${['RSI', 'MACD', 'EMA 9', 'EMA 20', 'EMA 50', 'Bollinger Bands', 'Volume', 'Stochastic', 'VWAP'].map(ind => `
-                                                <div class="indicator-option" onclick="addIndicator('${ind}')">${ind}</div>
+                                                <div class="indicator-option" onclick="addIndicator('${ind}'); toggleIndicatorMenu();">${ind}</div>
                                             `).join('')}
                                         </div>
                                     </div>
@@ -948,14 +1116,14 @@
                             </div>
                         </div>
                         <div class="chart-container">
-                            <div id="chart"></div>
+                            <div id="chart" style="width:100%; height:100%; min-height:450px;"></div>
                         </div>
                     </div>
                     
                     <div class="right-panel">
                         <div class="trade-tabs">
-                            <button class="trade-tab buy-tab active" onclick="setTradeSide('buy')">BUY</button>
-                            <button class="trade-tab sell-tab" onclick="setTradeSide('sell')">SELL</button>
+                            <button class="trade-tab active" id="buyTab" onclick="setTradeSide('buy')">BUY</button>
+                            <button class="trade-tab sell" id="sellTab" onclick="setTradeSide('sell')">SELL</button>
                         </div>
                         
                         <div class="trade-form">
@@ -975,79 +1143,31 @@
                         </div>
                         
                         <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-label">Total P&L</div>
-                                <div class="stat-value ${stats.totalPnL >= 0 ? 'positive' : 'negative'}">${stats.totalPnL >= 0 ? '+' : ''}$${stats.totalPnL.toFixed(2)}</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">Win Rate</div>
-                                <div class="stat-value">${stats.winRate.toFixed(1)}%</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">Best Trade</div>
-                                <div class="stat-value positive">+$${stats.bestTrade.toFixed(2)}</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">Worst Trade</div>
-                                <div class="stat-value negative">$${stats.worstTrade.toFixed(2)}</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">Avg Win</div>
-                                <div class="stat-value positive">+$${stats.avgWin.toFixed(2)}</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">Total Trades</div>
-                                <div class="stat-value">${stats.totalTrades}</div>
-                            </div>
+                            <div class="stat-card"><div class="stat-label">Total P&L</div><div class="stat-value" id="statTotalPnL">${stats.totalPnL >= 0 ? '+' : ''}$${stats.totalPnL.toFixed(2)}</div></div>
+                            <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="statWinRate">${stats.winRate.toFixed(1)}%</div></div>
+                            <div class="stat-card"><div class="stat-label">Best Trade</div><div class="stat-value positive" id="statBestTrade">+$${stats.bestTrade.toFixed(2)}</div></div>
+                            <div class="stat-card"><div class="stat-label">Worst Trade</div><div class="stat-value negative" id="statWorstTrade">$${stats.worstTrade.toFixed(2)}</div></div>
+                            <div class="stat-card"><div class="stat-label">Total Trades</div><div class="stat-value" id="statTotalTrades">${stats.totalTrades}</div></div>
                         </div>
                         
                         <div class="section">
                             <div class="section-title">OPEN POSITIONS (${userData.positions.length})</div>
-                            <div id="positionsContainer">
-                                ${userData.positions.map(pos => `
-                                    <div class="position-item">
-                                        <div class="position-row">
-                                            <span>${pos.coinName}</span>
-                                            <span class="${(marketPrices[pos.coin]?.price || pos.entryPrice) >= pos.entryPrice ? 'positive' : 'negative'}">
-                                                ${((marketPrices[pos.coin]?.price || pos.entryPrice) - pos.entryPrice) * pos.amount >= 0 ? '+' : ''}$${(((marketPrices[pos.coin]?.price || pos.entryPrice) - pos.entryPrice) * pos.amount).toFixed(2)}
-                                            </span>
-                                        </div>
-                                        <div class="position-row" style="font-size:10px; color:#666;">
-                                            <span>Entry: $${pos.entryPrice.toFixed(2)}</span>
-                                            <span>Amt: ${pos.amount.toFixed(6)}</span>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
+                            <div id="positionsContainer"></div>
                         </div>
                         
                         <div class="section">
                             <div class="section-title">TRADE HISTORY</div>
-                            <div id="historyContainer">
-                                ${userData.tradeHistory.slice(0, 10).map(trade => `
-                                    <div class="history-item">
-                                        <div class="history-row">
-                                            <span>${trade.coinName}</span>
-                                            <span class="${trade.pnl >= 0 ? 'positive' : 'negative'}">${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}</span>
-                                        </div>
-                                        <div class="history-row" style="font-size:9px; color:#666;">
-                                            <span>Entry: $${trade.entryPrice?.toFixed(2)}</span>
-                                            <span>Exit: $${trade.exitPrice?.toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
+                            <div id="historyContainer"></div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="status-bar">
-                    <div><span class="live-dot"></span> Binance Live Data • WebSocket</div>
-                    <div>ATHARVA CAPITAL v3.0 | ${currentUser ? `Logged in as ${currentUser.email}` : 'Not logged in'}</div>
-                    <div>500+ Coins | Real-time P&L</div>
+                    <div><span class="live-dot"></span> Binance Live Data • Real-time</div>
+                    <div>ATHARVA CAPITAL v3.0 | ${currentUser ? currentUser.email : 'Not logged in'}</div>
+                    <div>500+ Coins | Candlestick Chart | Indicators</div>
                 </div>
                 
-                <!-- Emotion Modal -->
                 <div class="modal" id="emotionModal">
                     <div class="modal-content">
                         <h3>🤔 How did you feel?</h3>
@@ -1059,40 +1179,43 @@
                             <button class="emotion-btn" onclick="submitEmotion('Calm')">😌 Calm</button>
                             <button class="emotion-btn" onclick="submitEmotion('Revenge')">😤 Revenge</button>
                         </div>
+                        <button class="execute-btn buy" onclick="closeModal('emotionModal')" style="margin-top:10px;">Close</button>
                     </div>
                 </div>
                 
-                <!-- Login Modal -->
                 <div class="modal" id="loginModal">
                     <div class="modal-content">
                         <h3>Login</h3>
-                        <div class="login-form">
-                            <input type="email" id="loginEmail" placeholder="Email">
-                            <input type="password" id="loginPassword" placeholder="Password">
-                            <button class="execute-btn buy" onclick="login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value)">Login</button>
-                        </div>
+                        <div class="input-group"><input type="email" id="loginEmail" placeholder="Email"></div>
+                        <div class="input-group"><input type="password" id="loginPassword" placeholder="Password"></div>
+                        <button class="execute-btn buy" onclick="login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); closeModal('loginModal')">Login</button>
+                        <button class="auth-btn" onclick="closeModal('loginModal')" style="margin-top:10px; width:100%;">Cancel</button>
                     </div>
                 </div>
             `;
             
-            // Re-initialize chart
-            setTimeout(() => initChart(), 100);
+            // Initialize chart after DOM is ready
+            setTimeout(async () => {
+                await initChart();
+                renderWatchlist();
+                renderRightPanel();
+                updatePriceDisplay();
+            }, 500);
             
             // Setup search
             const searchInput = document.getElementById('searchInput');
             const searchResults = document.getElementById('searchResults');
-            
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
                     const query = e.target.value;
-                    if (query.length < 1) {
+                    if (query.length < 2) {
                         searchResults.classList.remove('show');
                         return;
                     }
                     const results = searchCoins(query);
                     if (results.length > 0) {
                         searchResults.innerHTML = results.map(coin => `
-                            <div class="search-result-item" onclick="selectCoin('${coin.symbol}')">
+                            <div class="search-result-item" onclick="selectCoin('${coin.symbol}'); document.getElementById('searchResults').classList.remove('show'); document.getElementById('searchInput').value = '';">
                                 <strong>${coin.symbol.replace('USDT', '')}</strong>
                                 <span style="color:#666; font-size:11px;"> ${coin.symbol}</span>
                             </div>
@@ -1112,78 +1235,6 @@
             }
         }
         
-        // ============ HELPER FUNCTIONS ============
-        window.selectCoin = async (symbol) => {
-            selectedCoin = symbol;
-            selectedCoinName = symbol.replace('USDT', '');
-            await fetchChartData();
-            renderUI();
-        };
-        
-        window.changeTimeframe = (tf) => {
-            currentInterval = tf;
-            fetchChartData();
-            renderUI();
-        };
-        
-        window.toggleIndicatorMenu = () => {
-            const menu = document.getElementById('indicatorMenu');
-            if (menu) menu.classList.toggle('show');
-        };
-        
-        window.filterIndicators = () => {
-            const search = document.getElementById('indicatorSearch')?.value.toLowerCase();
-            const items = document.querySelectorAll('.indicator-option');
-            items.forEach(item => {
-                if (item.textContent.toLowerCase().includes(search)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        };
-        
-        window.setTradeSide = (side) => {
-            const buyTab = document.querySelector('.buy-tab');
-            const sellTab = document.querySelector('.sell-tab');
-            const execBtn = document.getElementById('executeBtn');
-            
-            if (side === 'buy') {
-                buyTab.classList.add('active');
-                sellTab.classList.remove('active');
-                execBtn.className = 'execute-btn buy';
-                execBtn.innerHTML = `BUY ${selectedCoinName}`;
-                execBtn.onclick = () => executeTrade('buy');
-            } else {
-                sellTab.classList.add('active');
-                buyTab.classList.remove('active');
-                execBtn.className = 'execute-btn sell';
-                execBtn.innerHTML = `SELL ${selectedCoinName}`;
-                execBtn.onclick = () => executeTrade('sell');
-            }
-        };
-        
-        window.showLoginModal = () => {
-            document.getElementById('loginModal').classList.add('show');
-            setTimeout(() => {
-                const close = () => document.getElementById('loginModal').classList.remove('show');
-                document.getElementById('loginModal').querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
-                document.getElementById('loginModal').addEventListener('click', close);
-            }, 100);
-        };
-        
-        window.showSignupModal = () => {
-            const email = prompt('Enter email for signup:');
-            const password = prompt('Enter password:');
-            if (email && password) signup(email, password);
-        };
-        
-        window.submitEmotion = (emotion) => {
-            userData.emotions.push({ emotion, timestamp: new Date().toISOString() });
-            saveUserData();
-            document.getElementById('emotionModal').classList.remove('show');
-        };
-        
         // ============ INIT ============
         async function init() {
             await loadAllCoins();
@@ -1191,18 +1242,27 @@
             setInterval(fetchPrices, 5000);
             renderUI();
             
-            auth.onAuthStateChanged(async (user) => {
-                currentUser = user;
-                if (user) {
-                    await loadUserData(user.uid);
-                } else {
-                    userData = { balance: 10000, positions: [], tradeHistory: [], emotions: [] };
-                }
-                renderUI();
-            });
+            if (auth) {
+                auth.onAuthStateChanged(async (user) => {
+                    currentUser = user;
+                    if (user) {
+                        await loadUserData(user.uid);
+                    } else {
+                        userData = { balance: 10000, positions: [], tradeHistory: [], emotions: [] };
+                    }
+                    renderUI();
+                });
+            }
         }
         
-        init();
+        // Load Lightweight Charts library dynamically
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js';
+        script.onload = () => {
+            console.log('Lightweight Charts loaded');
+            init();
+        };
+        document.head.appendChild(script);
     </script>
 </body>
 </html>
