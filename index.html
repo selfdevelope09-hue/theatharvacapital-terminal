@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Atharva Capital | Professional Crypto Trading Terminal</title>
+    <title>Atharva Capital | Professional Crypto Terminal</title>
     
-    <!-- TradingView Widgets -->
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    
+    <!-- Charting Library -->
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.js"></script>
     
     <style>
         * {
@@ -16,26 +21,25 @@
         }
 
         body {
-            background: #131722;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Trebuchet MS', 'Inter', monospace;
-            color: #d1d4dc;
+            background: #000000;
+            font-family: -apple-system, 'Segoe UI', 'Inter', monospace;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Professional Trading Terminal Layout */
+        /* Professional Terminal Layout */
         .terminal {
             display: flex;
             flex-direction: column;
             height: 100vh;
-            background: #131722;
+            background: #000000;
         }
 
-        /* Top Navigation Bar */
-        .top-nav {
-            background: #1e222d;
-            border-bottom: 1px solid #2a2e39;
-            padding: 8px 16px;
+        /* Top Bar */
+        .top-bar {
+            background: #0a0a0a;
+            border-bottom: 1px solid #1a1a1a;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -43,16 +47,10 @@
             gap: 10px;
         }
 
-        .logo-area {
-            display: flex;
-            align-items: baseline;
-            gap: 8px;
-        }
-
         .logo {
             font-size: 20px;
             font-weight: 700;
-            background: linear-gradient(135deg, #fff, #00ff88);
+            background: linear-gradient(135deg, #ffffff, #888888);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -60,64 +58,87 @@
 
         .logo-sub {
             font-size: 10px;
-            color: #787b86;
+            color: #444;
         }
 
-        .market-tickers {
-            display: flex;
-            gap: 20px;
-            overflow-x: auto;
+        .search-container {
+            position: relative;
+            width: 300px;
         }
 
-        .ticker {
-            display: flex;
-            gap: 8px;
-            align-items: baseline;
-            font-size: 13px;
-            padding: 4px 8px;
-            background: #2a2e39;
-            border-radius: 4px;
+        .search-input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: #fff;
+            font-size: 14px;
         }
 
-        .ticker-symbol {
-            color: #787b86;
+        .search-input:focus {
+            outline: none;
+            border-color: #00ff88;
         }
 
-        .ticker-price {
-            font-weight: 600;
-            font-family: monospace;
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
         }
 
-        .ticker-change.positive {
-            color: #00ff88;
+        .search-results.show {
+            display: block;
         }
 
-        .ticker-change.negative {
-            color: #ff3355;
+        .search-result-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #2a2a2a;
         }
 
-        .user-area {
+        .search-result-item:hover {
+            background: #2a2a2a;
+        }
+
+        .user-info {
             display: flex;
             gap: 15px;
             align-items: center;
         }
 
         .balance {
-            background: #2a2e39;
-            padding: 4px 12px;
-            border-radius: 4px;
+            background: #1a1a1a;
+            padding: 6px 12px;
+            border-radius: 8px;
             font-family: monospace;
-            font-weight: 600;
         }
 
         .topup-btn {
             background: #00ff88;
             color: #000;
             border: none;
-            padding: 4px 12px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+        }
+
+        .auth-btn {
+            background: #2a2a2a;
+            border: none;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
         }
 
         /* Main Layout */
@@ -126,167 +147,85 @@
             flex: 1;
             overflow: hidden;
             gap: 1px;
-            background: #2a2e39;
+            background: #1a1a1a;
         }
 
-        /* Left Panel - Watchlist & Tools */
+        /* Left Panel - Watchlist */
         .left-panel {
             width: 280px;
-            background: #1e222d;
+            background: #0a0a0a;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
         }
 
-        .panel-section {
-            border-bottom: 1px solid #2a2e39;
-            padding: 12px;
+        .panel-header {
+            padding: 15px;
+            border-bottom: 1px solid #1a1a1a;
         }
 
-        .panel-title {
-            font-size: 11px;
-            color: #787b86;
+        .panel-header h3 {
+            font-size: 12px;
+            color: #666;
             letter-spacing: 1px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
         }
 
         .watchlist-item {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
+            padding: 10px 15px;
             cursor: pointer;
-            border-radius: 4px;
-            margin-bottom: 2px;
+            border-bottom: 1px solid #111;
         }
 
         .watchlist-item:hover {
-            background: #2a2e39;
+            background: #111;
         }
 
         .watchlist-item.active {
-            background: #2a2e39;
+            background: #1a2a1a;
             border-left: 2px solid #00ff88;
         }
 
-        .coin-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .coin-symbol {
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .coin-name {
-            font-size: 10px;
-            color: #787b86;
-        }
-
-        .coin-price {
-            text-align: right;
-        }
-
-        .price {
-            font-family: monospace;
-            font-size: 12px;
-        }
-
-        .change {
-            font-size: 10px;
-        }
-
-        .change.positive {
-            color: #00ff88;
-        }
-
-        .change.negative {
-            color: #ff3355;
-        }
-
-        /* Drawing Tools */
-        .drawing-tools {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .draw-btn {
-            background: #2a2e39;
-            border: none;
-            color: #d1d4dc;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .draw-btn:hover, .draw-btn.active {
-            background: #00ff88;
-            color: #000;
-        }
-
-        /* Indicators List */
-        .indicators-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .indicator-btn {
-            background: #2a2e39;
-            border: none;
-            color: #d1d4dc;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            cursor: pointer;
-        }
-
-        .indicator-btn.active {
-            background: #00ff88;
-            color: #000;
-        }
-
-        /* Center - Chart Area */
+        /* Center Panel - Chart */
         .center-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #131722;
-            min-width: 0;
+            background: #000000;
         }
 
         .chart-header {
+            padding: 10px 15px;
+            border-bottom: 1px solid #1a1a1a;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 16px;
-            background: #1e222d;
-            border-bottom: 1px solid #2a2e39;
         }
 
-        .chart-symbol {
-            font-size: 18px;
+        .current-symbol {
+            font-size: 20px;
             font-weight: 600;
+        }
+
+        .current-price {
+            font-size: 24px;
+            font-family: monospace;
         }
 
         .timeframes {
             display: flex;
-            gap: 4px;
+            gap: 5px;
         }
 
         .tf-btn {
             background: transparent;
-            border: 1px solid #2a2e39;
-            color: #787b86;
+            border: 1px solid #2a2a2a;
+            color: #888;
             padding: 4px 10px;
             border-radius: 4px;
-            font-size: 11px;
             cursor: pointer;
+            font-size: 11px;
         }
 
         .tf-btn.active {
@@ -295,28 +234,69 @@
             border-color: #00ff88;
         }
 
-        .layout-buttons {
-            display: flex;
-            gap: 4px;
+        .indicator-dropdown {
+            position: relative;
         }
 
-        .layout-btn {
-            background: #2a2e39;
-            border: none;
-            color: #d1d4dc;
-            padding: 4px 8px;
+        .indicator-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #fff;
+            padding: 6px 12px;
             border-radius: 4px;
-            font-size: 10px;
             cursor: pointer;
+        }
+
+        .indicator-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            width: 250px;
+            display: none;
+            z-index: 100;
+        }
+
+        .indicator-menu.show {
+            display: block;
+        }
+
+        .indicator-search {
+            padding: 10px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .indicator-search input {
+            width: 100%;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            padding: 6px;
+            border-radius: 4px;
+            color: #fff;
+        }
+
+        .indicator-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .indicator-option {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .indicator-option:hover {
+            background: #2a2a2a;
         }
 
         .chart-container {
             flex: 1;
             position: relative;
-            min-height: 0;
         }
 
-        #tradingview-chart {
+        #chart {
             width: 100%;
             height: 100%;
         }
@@ -324,7 +304,7 @@
         /* Right Panel - Trading */
         .right-panel {
             width: 320px;
-            background: #1e222d;
+            background: #0a0a0a;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
@@ -334,16 +314,15 @@
             display: flex;
             padding: 12px;
             gap: 8px;
-            border-bottom: 1px solid #2a2e39;
         }
 
         .trade-tab {
             flex: 1;
-            background: #2a2e39;
+            padding: 10px;
+            background: #1a1a1a;
             border: none;
-            color: #d1d4dc;
-            padding: 8px;
-            border-radius: 4px;
+            color: #888;
+            border-radius: 6px;
             cursor: pointer;
         }
 
@@ -356,53 +335,32 @@
             padding: 12px;
         }
 
-        .input-field {
+        .input-group {
             margin-bottom: 12px;
         }
 
-        .input-field label {
+        .input-group label {
             display: block;
             font-size: 11px;
-            color: #787b86;
+            color: #666;
             margin-bottom: 4px;
         }
 
-        .input-field input, .input-field select {
+        .input-group input {
             width: 100%;
-            background: #2a2e39;
-            border: 1px solid #3a3e49;
-            padding: 8px 12px;
-            border-radius: 4px;
-            color: #d1d4dc;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            color: #fff;
             font-family: monospace;
-        }
-
-        .order-type {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .order-type-btn {
-            flex: 1;
-            background: #2a2e39;
-            border: none;
-            color: #d1d4dc;
-            padding: 6px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .order-type-btn.active {
-            background: #00ff88;
-            color: #000;
         }
 
         .execute-btn {
             width: 100%;
             padding: 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: 700;
             cursor: pointer;
             margin-top: 12px;
@@ -418,39 +376,66 @@
             color: #fff;
         }
 
-        .positions-list, .orders-list {
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
             padding: 12px;
-            border-top: 1px solid #2a2e39;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .stat-value.positive {
+            color: #00ff88;
+        }
+
+        .stat-value.negative {
+            color: #ff3355;
+        }
+
+        /* Positions & History */
+        .section {
+            padding: 12px;
+            border-top: 1px solid #1a1a1a;
         }
 
         .section-title {
             font-size: 11px;
-            color: #787b86;
+            color: #666;
             margin-bottom: 8px;
         }
 
-        .position-card, .order-card {
-            background: #2a2e39;
-            border-radius: 4px;
+        .position-item, .history-item {
+            background: #1a1a1a;
+            border-radius: 6px;
             padding: 8px;
             margin-bottom: 6px;
         }
 
-        .position-row, .order-row {
+        .position-row, .history-row {
             display: flex;
             justify-content: space-between;
             font-size: 12px;
         }
 
-        .pnl-positive {
-            color: #00ff88;
-        }
-
-        .pnl-negative {
-            color: #ff3355;
-        }
-
-        /* Replay Modal */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -458,39 +443,49 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
         }
 
-        .modal.active {
+        .modal.show {
             display: flex;
         }
 
         .modal-content {
-            background: #1e222d;
-            border-radius: 8px;
+            background: #1a1a1a;
+            border-radius: 12px;
             padding: 24px;
             width: 90%;
-            max-width: 500px;
+            max-width: 400px;
         }
 
-        .replay-controls {
-            display: flex;
+        .emotion-buttons {
+            display: grid;
+            grid-template-columns: repeat(2,1fr);
             gap: 10px;
-            margin-top: 20px;
+            margin: 20px 0;
+        }
+
+        .emotion-btn {
+            background: #2a2a2a;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            color: #fff;
+            cursor: pointer;
         }
 
         /* Status Bar */
         .status-bar {
-            background: #1e222d;
-            border-top: 1px solid #2a2e39;
-            padding: 4px 16px;
+            background: #0a0a0a;
+            border-top: 1px solid #1a1a1a;
+            padding: 6px 20px;
             display: flex;
             justify-content: space-between;
             font-size: 10px;
-            color: #787b86;
+            color: #555;
         }
 
         .live-dot {
@@ -506,635 +501,708 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
+
+        /* Login Modal */
+        .login-form input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
-    <div class="terminal">
-        <!-- Top Navigation -->
-        <div class="top-nav">
-            <div class="logo-area">
-                <span class="logo">▲ ATHARVA CAPITAL</span>
-                <span class="logo-sub">by Atharva Darshanwar</span>
-            </div>
-            <div class="market-tickers" id="tickers"></div>
-            <div class="user-area">
-                <span class="balance" id="balance">$10,000.00</span>
-                <button class="topup-btn" onclick="topUpBalance()">+ Add Funds</button>
-            </div>
-        </div>
-
-        <!-- Main Layout -->
-        <div class="main-layout">
-            <!-- Left Panel -->
-            <div class="left-panel">
-                <div class="panel-section">
-                    <div class="panel-title">WATCHLIST</div>
-                    <div id="watchlist"></div>
-                </div>
-                
-                <div class="panel-section">
-                    <div class="panel-title">DRAWING TOOLS</div>
-                    <div class="drawing-tools">
-                        <button class="draw-btn" data-tool="cursor">🖱️</button>
-                        <button class="draw-btn" data-tool="trendline">📈 Trend</button>
-                        <button class="draw-btn" data-tool="fibonacci">🌀 Fib</button>
-                        <button class="draw-btn" data-tool="horizontal">➡️ Horizontal</button>
-                        <button class="draw-btn" data-tool="ray">✨ Ray</button>
-                    </div>
-                </div>
-                
-                <div class="panel-section">
-                    <div class="panel-title">INDICATORS</div>
-                    <div class="indicators-list">
-                        <button class="indicator-btn" data-indicator="RSI">RSI</button>
-                        <button class="indicator-btn" data-indicator="MACD">MACD</button>
-                        <button class="indicator-btn" data-indicator="EMA9">EMA 9</button>
-                        <button class="indicator-btn" data-indicator="EMA20">EMA 20</button>
-                        <button class="indicator-btn" data-indicator="EMA50">EMA 50</button>
-                        <button class="indicator-btn" data-indicator="BB">Bollinger</button>
-                        <button class="indicator-btn" data-indicator="VWAP">VWAP</button>
-                    </div>
-                </div>
-                
-                <div class="panel-section">
-                    <div class="panel-title">LAYOUTS</div>
-                    <div class="drawing-tools">
-                        <button class="layout-btn" data-layout="1">1 Chart</button>
-                        <button class="layout-btn" data-layout="2">2 Charts</button>
-                        <button class="layout-btn" data-layout="4">4 Charts</button>
-                        <button class="layout-btn" data-layout="6">6 Charts</button>
-                    </div>
-                </div>
-                
-                <div class="panel-section">
-                    <div class="panel-title">TOOLS</div>
-                    <div class="drawing-tools">
-                        <button class="draw-btn" id="replayBtn">⏪ Market Replay</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Center Panel - Chart -->
-            <div class="center-panel">
-                <div class="chart-header">
-                    <div class="chart-symbol" id="currentSymbol">BTC/USDT</div>
-                    <div class="timeframes" id="timeframes">
-                        <button class="tf-btn" data-tf="1">1m</button>
-                        <button class="tf-btn" data-tf="5">5m</button>
-                        <button class="tf-btn" data-tf="15">15m</button>
-                        <button class="tf-btn" data-tf="60">1h</button>
-                        <button class="tf-btn" data-tf="240">4h</button>
-                        <button class="tf-btn" data-tf="1D" class="active">1D</button>
-                    </div>
-                    <div class="layout-buttons">
-                        <button class="layout-btn" onclick="toggleFullscreen()">⛶</button>
-                    </div>
-                </div>
-                <div class="chart-container">
-                    <div id="tradingview-chart"></div>
-                </div>
-            </div>
-
-            <!-- Right Panel - Trading -->
-            <div class="right-panel">
-                <div class="trade-tabs">
-                    <button class="trade-tab active" data-trade="buy">BUY</button>
-                    <button class="trade-tab" data-trade="sell">SELL</button>
-                </div>
-                
-                <div class="trade-form">
-                    <div class="order-type">
-                        <button class="order-type-btn active" data-order="market">MARKET</button>
-                        <button class="order-type-btn" data-order="limit">LIMIT</button>
-                    </div>
-                    
-                    <div class="input-field">
-                        <label>Amount</label>
-                        <input type="number" id="tradeAmount" placeholder="0.00">
-                    </div>
-                    
-                    <div class="input-field" id="limitPriceField" style="display:none;">
-                        <label>Limit Price</label>
-                        <input type="number" id="limitPrice" placeholder="0.00">
-                    </div>
-                    
-                    <div class="input-field">
-                        <label>Stop Loss (Optional)</label>
-                        <input type="number" id="stopLoss" placeholder="0.00">
-                    </div>
-                    
-                    <div class="input-field">
-                        <label>Take Profit (Optional)</label>
-                        <input type="number" id="takeProfit" placeholder="0.00">
-                    </div>
-                    
-                    <button class="execute-btn buy" id="executeBtn">BUY BTC/USDT</button>
-                </div>
-                
-                <div class="positions-list">
-                    <div class="section-title">OPEN POSITIONS</div>
-                    <div id="positionsContainer"></div>
-                </div>
-                
-                <div class="orders-list">
-                    <div class="section-title">TRADE HISTORY</div>
-                    <div id="historyContainer"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <div><span class="live-dot"></span> LIVE DATA • Binance WebSocket</div>
-            <div>ATHARVA CAPITAL v2.0 | Professional Trading Terminal</div>
-            <div>Drag-drop SL/TP • Indicators • Fibonacci • Trendline • Replay</div>
-        </div>
-    </div>
-
-    <!-- Replay Modal -->
-    <div id="replayModal" class="modal">
-        <div class="modal-content">
-            <h3>⏪ Market Replay Mode</h3>
-            <p>Select date and speed to replay past market data</p>
-            <div class="input-field">
-                <label>Date</label>
-                <input type="datetime-local" id="replayDate">
-            </div>
-            <div class="input-field">
-                <label>Speed</label>
-                <select id="replaySpeed">
-                    <option value="1">1x</option>
-                    <option value="2">2x</option>
-                    <option value="5">5x</option>
-                    <option value="10">10x</option>
-                </select>
-            </div>
-            <div class="replay-controls">
-                <button class="draw-btn" id="startReplay">▶ Start Replay</button>
-                <button class="draw-btn" id="stopReplay">⏸ Stop</button>
-                <button class="draw-btn" id="closeModal">Close</button>
-            </div>
-        </div>
+    <div class="terminal" id="app">
+        <!-- Will be populated by JS -->
     </div>
 
     <script>
-        // ============ TRADING VIEW CHART INITIALIZATION ============
-        let tvWidget = null;
-        let currentSymbol = 'BINANCE:BTCUSDT';
-        let currentInterval = '1D';
-        let currentLayout = 1;
-        let activeDrawingTool = null;
+        // ============ FIREBASE CONFIG (REPLACE WITH YOURS) ============
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // ============ GLOBAL STATE ============
+        let currentUser = null;
+        let userData = {
+            balance: 10000,
+            positions: [],
+            tradeHistory: [],
+            emotions: []
+        };
+        
+        let selectedCoin = 'BTCUSDT';
+        let selectedCoinName = 'BTC';
+        let currentPrice = 0;
+        let marketPrices = {};
+        let allCoins = [];
+        let chart = null;
+        let candlestickSeries = null;
+        let currentInterval = '1h';
         let activeIndicators = [];
         
-        // Trading state
-        let virtualBalance = 10000;
-        let positions = [];
-        let tradeHistory = [];
-        let marketPrices = {};
-        
-        // Load saved data
-        function loadData() {
-            const saved = localStorage.getItem('tv_data');
-            if (saved) {
-                const data = JSON.parse(saved);
-                virtualBalance = data.balance || 10000;
-                positions = data.positions || [];
-                tradeHistory = data.history || [];
-            }
-            updateBalanceDisplay();
-        }
-        
-        function saveData() {
-            localStorage.setItem('tv_data', JSON.stringify({
-                balance: virtualBalance,
-                positions: positions,
-                history: tradeHistory
-            }));
-        }
-        
-        function updateBalanceDisplay() {
-            document.getElementById('balance').innerText = `$${virtualBalance.toFixed(2)}`;
-        }
-        
-        function topUpBalance() {
-            virtualBalance += 1000;
-            saveData();
-            updateBalanceDisplay();
-            renderPositions();
-        }
-        
-        // Initialize TradingView Widget
-        function initTradingView() {
-            if (tvWidget) {
-                tvWidget.remove();
-            }
-            
-            tvWidget = new TradingView.widget({
-                container: 'tradingview-chart',
-                symbol: currentSymbol,
-                interval: currentInterval,
-                timezone: 'Asia/Kolkata',
-                theme: 'dark',
-                style: '1',
-                locale: 'en',
-                toolbar_bg: '#131722',
-                enable_publishing: false,
-                allow_symbol_change: true,
-                hideideas: true,
-                studies: activeIndicators,
-                drawings_access: {
-                    type: 'black',
-                    tools: [
-                        { name: "Trend Line" },
-                        { name: "Fibonacci Retracement" },
-                        { name: "Horizontal Line" },
-                        { name: "Ray" },
-                        { name: "Support Resistance" }
-                    ]
-                },
-                overrides: {
-                    'paneProperties.background': '#131722',
-                    'paneProperties.vertGridProperties.color': '#2a2e39',
-                    'paneProperties.horzGridProperties.color': '#2a2e39',
-                },
-                disabled_features: ['use_localstorage_for_settings'],
-                enabled_features: ['study_templates'],
-                autosize: true,
-                fullscreen: false,
-            });
-            
-            tvWidget.onChartReady(() => {
-                console.log('TradingView Chart Ready');
-                // Apply active drawing tool if any
-                if (activeDrawingTool) {
-                    applyDrawingTool(activeDrawingTool);
-                }
-            });
-        }
-        
-        // Apply drawing tool
-        function applyDrawingTool(tool) {
-            if (!tvWidget) return;
-            const chart = tvWidget.chart();
-            switch(tool) {
-                case 'trendline':
-                    chart.chart().executeActionById('drawingToolbarAction');
-                    break;
-                case 'fibonacci':
-                    chart.chart().executeActionById('drawingToolbarAction');
-                    break;
-                case 'horizontal':
-                    chart.chart().executeActionById('drawingToolbarAction');
-                    break;
+        // ============ LOAD ALL COINS FROM BINANCE ============
+        async function loadAllCoins() {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/exchangeInfo');
+                const data = await response.json();
+                allCoins = data.symbols
+                    .filter(s => s.quoteAsset === 'USDT' && s.status === 'TRADING')
+                    .map(s => ({
+                        symbol: s.symbol,
+                        baseAsset: s.baseAsset,
+                        quoteAsset: s.quoteAsset
+                    }))
+                    .slice(0, 500);
+                return allCoins;
+            } catch(e) {
+                console.error('Error loading coins:', e);
+                return [];
             }
         }
         
-        // Add indicator
-        function addIndicator(indicator) {
-            if (!tvWidget) return;
-            const chart = tvWidget.chart();
-            switch(indicator) {
-                case 'RSI':
-                    chart.createStudy('Relative Strength Index', false, false);
-                    break;
-                case 'MACD':
-                    chart.createStudy('MACD', false, false);
-                    break;
-                case 'EMA9':
-                    chart.createStudy('Moving Average Exponential', false, false, { length: 9 });
-                    break;
-                case 'EMA20':
-                    chart.createStudy('Moving Average Exponential', false, false, { length: 20 });
-                    break;
-                case 'EMA50':
-                    chart.createStudy('Moving Average Exponential', false, false, { length: 50 });
-                    break;
-                case 'BB':
-                    chart.createStudy('Bollinger Bands', false, false);
-                    break;
-                case 'VWAP':
-                    chart.createStudy('Volume Weighted Average Price', false, false);
-                    break;
-            }
-            if (!activeIndicators.includes(indicator)) {
-                activeIndicators.push(indicator);
-            }
+        // ============ SEARCH COINS ============
+        function searchCoins(query) {
+            if (!query || query.length < 1) return [];
+            return allCoins
+                .filter(coin => coin.symbol.toLowerCase().includes(query.toLowerCase()))
+                .slice(0, 20);
         }
         
-        // Change layout
-        function changeLayout(charts) {
-            currentLayout = charts;
-            // For multiple charts, we would need multiple widgets
-            // For simplicity, we recreate single chart
-            initTradingView();
-        }
-        
-        // Fetch live prices from Binance
+        // ============ FETCH LIVE PRICES ============
         async function fetchPrices() {
             try {
                 const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
                 const data = await response.json();
-                const coins = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'DOGEUSDT', 'ADAUSDT'];
-                coins.forEach(coin => {
-                    const coinData = data.find(d => d.symbol === coin);
-                    if (coinData) {
-                        marketPrices[coin] = {
-                            price: parseFloat(coinData.lastPrice),
-                            change: parseFloat(coinData.priceChangePercent)
-                        };
-                    }
+                data.forEach(item => {
+                    marketPrices[item.symbol] = {
+                        price: parseFloat(item.lastPrice),
+                        change: parseFloat(item.priceChangePercent),
+                        high: parseFloat(item.highPrice),
+                        low: parseFloat(item.lowPrice),
+                        volume: parseFloat(item.volume)
+                    };
                 });
-                updateTickers();
-                updateWatchlist();
-            } catch(e) { console.error(e); }
-        }
-        
-        function updateTickers() {
-            const container = document.getElementById('tickers');
-            if (!container) return;
-            const coins = ['BTC', 'ETH', 'SOL', 'BNB'];
-            container.innerHTML = coins.map(coin => {
-                const data = marketPrices[`${coin}USDT`];
-                return `
-                    <div class="ticker">
-                        <span class="ticker-symbol">${coin}</span>
-                        <span class="ticker-price">$${data?.price?.toLocaleString() || '—'}</span>
-                        <span class="ticker-change ${data?.change >= 0 ? 'positive' : 'negative'}">
-                            ${data?.change >= 0 ? '+' : ''}${data?.change?.toFixed(2) || '0'}%
-                        </span>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        function updateWatchlist() {
-            const container = document.getElementById('watchlist');
-            if (!container) return;
-            const coins = [
-                { symbol: 'BTCUSDT', name: 'Bitcoin' },
-                { symbol: 'ETHUSDT', name: 'Ethereum' },
-                { symbol: 'SOLUSDT', name: 'Solana' },
-                { symbol: 'BNBUSDT', name: 'BNB' },
-                { symbol: 'XRPUSDT', name: 'Ripple' },
-                { symbol: 'DOGEUSDT', name: 'Dogecoin' },
-                { symbol: 'ADAUSDT', name: 'Cardano' }
-            ];
-            container.innerHTML = coins.map(coin => {
-                const data = marketPrices[coin.symbol];
-                const isActive = currentSymbol === `BINANCE:${coin.symbol}`;
-                return `
-                    <div class="watchlist-item ${isActive ? 'active' : ''}" onclick="changeSymbol('BINANCE:${coin.symbol}', '${coin.symbol.replace('USDT', '')}/USDT')">
-                        <div class="coin-info">
-                            <span class="coin-symbol">${coin.symbol.replace('USDT', '')}</span>
-                            <span class="coin-name">${coin.name}</span>
-                        </div>
-                        <div class="coin-price">
-                            <div class="price">$${data?.price?.toLocaleString() || '—'}</div>
-                            <div class="change ${data?.change >= 0 ? 'positive' : 'negative'}">
-                                ${data?.change >= 0 ? '+' : ''}${data?.change?.toFixed(2) || '0'}%
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        function changeSymbol(symbol, displayName) {
-            currentSymbol = symbol;
-            document.getElementById('currentSymbol').innerText = displayName;
-            document.getElementById('executeBtn').innerHTML = `BUY ${displayName}`;
-            if (tvWidget) {
-                tvWidget.setSymbol(symbol);
+                if (marketPrices[selectedCoin]) {
+                    currentPrice = marketPrices[selectedCoin].price;
+                }
+                renderUI();
+                return marketPrices;
+            } catch(e) {
+                console.error('Price fetch error:', e);
             }
-            updateWatchlist();
         }
         
-        // Execute trade
-        function executeTrade() {
-            const side = document.querySelector('.trade-tab.active').dataset.trade;
-            const amount = parseFloat(document.getElementById('tradeAmount').value);
-            const orderType = document.querySelector('.order-type-btn.active').dataset.order;
-            const limitPriceVal = parseFloat(document.getElementById('limitPrice').value);
-            const sl = parseFloat(document.getElementById('stopLoss').value);
-            const tp = parseFloat(document.getElementById('takeProfit').value);
+        // ============ FETCH CHART DATA ============
+        async function fetchChartData() {
+            try {
+                const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${selectedCoin}&interval=${currentInterval}&limit=200`);
+                const data = await response.json();
+                const chartData = data.map(k => ({
+                    time: k[0] / 1000,
+                    open: parseFloat(k[1]),
+                    high: parseFloat(k[2]),
+                    low: parseFloat(k[3]),
+                    close: parseFloat(k[4])
+                }));
+                if (candlestickSeries) {
+                    candlestickSeries.setData(chartData);
+                }
+                return chartData;
+            } catch(e) {
+                console.error('Chart data error:', e);
+            }
+        }
+        
+        // ============ INITIALIZE CHART ============
+        function initChart() {
+            const container = document.getElementById('chart');
+            if (!container) return;
             
-            const coin = currentSymbol.replace('BINANCE:', '');
-            const currentPrice = marketPrices[coin]?.price || 0;
-            const tradePrice = orderType === 'market' ? currentPrice : limitPriceVal;
+            chart = LightweightCharts.createChart(container, {
+                layout: { background: { color: '#000000' }, textColor: '#888888' },
+                grid: { vertLines: { color: '#111111' }, horzLines: { color: '#111111' } },
+                crosshair: { mode: 0, vertLine: { color: '#333' }, horzLine: { color: '#333' } },
+                rightPriceScale: { borderColor: '#1a1a1a' },
+                timeScale: { borderColor: '#1a1a1a', timeVisible: true },
+                width: container.clientWidth,
+                height: 400
+            });
+            
+            candlestickSeries = chart.addCandlestickSeries({
+                upColor: '#00ff88',
+                downColor: '#ff3355',
+                borderUpColor: '#00ff88',
+                borderDownColor: '#ff3355',
+                wickUpColor: '#00ff88',
+                wickDownColor: '#ff3355'
+            });
+            
+            window.addEventListener('resize', () => {
+                if (chart && container) {
+                    chart.applyOptions({ width: container.clientWidth });
+                }
+            });
+            
+            fetchChartData();
+        }
+        
+        // ============ ADD INDICATOR ============
+        function addIndicator(indicatorName) {
+            if (!chart) return;
+            
+            switch(indicatorName) {
+                case 'RSI':
+                    const rsiSeries = chart.addLineSeries({ color: '#aa00ff', lineWidth: 1, title: 'RSI' });
+                    // Calculate RSI from chart data
+                    break;
+                case 'MACD':
+                    const macdSeries = chart.addLineSeries({ color: '#ffaa00', lineWidth: 1, title: 'MACD' });
+                    break;
+                case 'EMA 9':
+                    const ema9Series = chart.addLineSeries({ color: '#00aaff', lineWidth: 1, title: 'EMA 9' });
+                    break;
+                case 'EMA 20':
+                    const ema20Series = chart.addLineSeries({ color: '#ffaa00', lineWidth: 1, title: 'EMA 20' });
+                    break;
+                case 'EMA 50':
+                    const ema50Series = chart.addLineSeries({ color: '#ff66cc', lineWidth: 1, title: 'EMA 50' });
+                    break;
+                case 'Bollinger Bands':
+                    const bbUpper = chart.addLineSeries({ color: '#888888', lineWidth: 1, title: 'BB Upper' });
+                    const bbLower = chart.addLineSeries({ color: '#888888', lineWidth: 1, title: 'BB Lower' });
+                    break;
+                case 'Volume':
+                    const volumeSeries = chart.addHistogramSeries({ color: '#333333', priceFormat: { type: 'volume' } });
+                    break;
+            }
+            
+            if (!activeIndicators.includes(indicatorName)) {
+                activeIndicators.push(indicatorName);
+            }
+        }
+        
+        // ============ EXECUTE TRADE ============
+        async function executeTrade(side) {
+            if (!currentUser) {
+                alert('Please login first!');
+                return;
+            }
+            
+            const amount = parseFloat(document.getElementById('tradeAmount')?.value || 0);
+            const sl = parseFloat(document.getElementById('stopLoss')?.value || 0);
+            const tp = parseFloat(document.getElementById('takeProfit')?.value || 0);
             
             if (!amount || amount <= 0) {
                 alert('Enter valid amount');
                 return;
             }
             
-            const totalCost = amount * tradePrice;
+            const totalCost = amount * currentPrice;
             
             if (side === 'buy') {
-                if (totalCost > virtualBalance) {
-                    alert('Insufficient balance! Use +Add Funds');
+                if (totalCost > userData.balance) {
+                    alert('Insufficient balance!');
                     return;
                 }
-                positions.push({
+                
+                userData.positions.push({
                     id: Date.now(),
-                    coin: coin,
+                    coin: selectedCoin,
+                    coinName: selectedCoinName,
                     amount: amount,
-                    entryPrice: tradePrice,
+                    entryPrice: currentPrice,
                     stopLoss: sl || null,
                     takeProfit: tp || null,
                     timestamp: new Date().toISOString()
                 });
-                virtualBalance -= totalCost;
+                userData.balance -= totalCost;
             } else {
-                const position = positions.find(p => p.coin === coin);
+                const position = userData.positions.find(p => p.coin === selectedCoin);
                 if (!position) {
                     alert('No position to sell');
                     return;
                 }
-                const pnl = (tradePrice - position.entryPrice) * position.amount;
-                tradeHistory.unshift({
+                
+                const pnl = (currentPrice - position.entryPrice) * position.amount;
+                userData.tradeHistory.unshift({
                     id: Date.now(),
-                    coin: coin,
+                    coin: selectedCoin,
+                    coinName: selectedCoinName,
                     entryPrice: position.entryPrice,
-                    exitPrice: tradePrice,
+                    exitPrice: currentPrice,
                     amount: position.amount,
                     pnl: pnl,
                     timestamp: new Date().toISOString()
                 });
-                virtualBalance += position.amount * tradePrice;
-                positions = positions.filter(p => p.id !== position.id);
+                userData.balance += position.amount * currentPrice;
+                userData.positions = userData.positions.filter(p => p.id !== position.id);
                 
-                // Emotion tracker
-                setTimeout(() => {
-                    const emotion = prompt('🤔 How did you feel during this trade?\nOptions: Fear, Greed, FOMO, Confident, Calm, Revenge');
-                    if (emotion) {
-                        const emotions = JSON.parse(localStorage.getItem('emotions') || '[]');
-                        emotions.push({ trade: tradeHistory[0], emotion, time: new Date().toISOString() });
-                        localStorage.setItem('emotions', JSON.stringify(emotions));
-                    }
-                }, 100);
+                // Show emotion modal
+                showEmotionModal();
             }
             
-            saveData();
-            updateBalanceDisplay();
-            renderPositions();
-            renderHistory();
+            // Save to Firebase
+            await saveUserData();
+            renderUI();
+            
             document.getElementById('tradeAmount').value = '';
             document.getElementById('stopLoss').value = '';
             document.getElementById('takeProfit').value = '';
         }
         
-        function renderPositions() {
-            const container = document.getElementById('positionsContainer');
-            if (!container) return;
-            if (positions.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#787b86; padding:20px;">No open positions</div>';
-                return;
-            }
-            container.innerHTML = positions.map(pos => {
-                const currentPrice = marketPrices[pos.coin]?.price || pos.entryPrice;
-                const pnl = (currentPrice - pos.entryPrice) * pos.amount;
-                return `
-                    <div class="position-card">
-                        <div class="position-row">
-                            <span>${pos.coin.replace('USDT', '')}</span>
-                            <span class="${pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}</span>
-                        </div>
-                        <div class="position-row" style="font-size:10px; color:#787b86;">
-                            <span>Entry: $${pos.entryPrice.toFixed(2)}</span>
-                            <span>Amount: ${pos.amount.toFixed(6)}</span>
-                        </div>
-                        ${pos.stopLoss ? `<div class="position-row" style="font-size:9px;">SL: $${pos.stopLoss}</div>` : ''}
-                        ${pos.takeProfit ? `<div class="position-row" style="font-size:9px;">TP: $${pos.takeProfit}</div>` : ''}
-                    </div>
-                `;
-            }).join('');
+        // ============ EMOTION MODAL ============
+        function showEmotionModal() {
+            const modal = document.getElementById('emotionModal');
+            modal.classList.add('show');
+            
+            window.submitEmotion = async (emotion) => {
+                userData.emotions.push({
+                    emotion: emotion,
+                    timestamp: new Date().toISOString()
+                });
+                await saveUserData();
+                modal.classList.remove('show');
+            };
         }
         
-        function renderHistory() {
-            const container = document.getElementById('historyContainer');
-            if (!container) return;
-            if (tradeHistory.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#787b86; padding:20px;">No trades yet</div>';
-                return;
+        // ============ TOP UP BALANCE ============
+        async function topUpBalance() {
+            userData.balance += 1000;
+            await saveUserData();
+            renderUI();
+        }
+        
+        // ============ FIREBASE OPERATIONS ============
+        async function saveUserData() {
+            if (!currentUser) return;
+            await db.collection('users').doc(currentUser.uid).set({
+                balance: userData.balance,
+                positions: userData.positions,
+                tradeHistory: userData.tradeHistory,
+                emotions: userData.emotions,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+        }
+        
+        async function loadUserData(uid) {
+            const doc = await db.collection('users').doc(uid).get();
+            if (doc.exists) {
+                const data = doc.data();
+                userData.balance = data.balance || 10000;
+                userData.positions = data.positions || [];
+                userData.tradeHistory = data.tradeHistory || [];
+                userData.emotions = data.emotions || [];
+            } else {
+                userData = {
+                    balance: 10000,
+                    positions: [],
+                    tradeHistory: [],
+                    emotions: []
+                };
             }
-            container.innerHTML = tradeHistory.slice(0, 10).map(trade => `
-                <div class="order-card">
-                    <div class="order-row">
-                        <span>${trade.coin.replace('USDT', '')}</span>
-                        <span class="${trade.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}</span>
+            renderUI();
+        }
+        
+        // ============ AUTHENTICATION ============
+        async function login(email, password) {
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                currentUser = auth.currentUser;
+                await loadUserData(currentUser.uid);
+                renderUI();
+                return true;
+            } catch(e) {
+                alert('Login failed: ' + e.message);
+                return false;
+            }
+        }
+        
+        async function signup(email, password) {
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                currentUser = auth.currentUser;
+                await saveUserData();
+                renderUI();
+                return true;
+            } catch(e) {
+                alert('Signup failed: ' + e.message);
+                return false;
+            }
+        }
+        
+        function logout() {
+            auth.signOut();
+            currentUser = null;
+            userData = { balance: 10000, positions: [], tradeHistory: [], emotions: [] };
+            renderUI();
+        }
+        
+        // ============ STATS CALCULATIONS ============
+        function calculateStats() {
+            const trades = userData.tradeHistory;
+            const winningTrades = trades.filter(t => t.pnl > 0);
+            const losingTrades = trades.filter(t => t.pnl < 0);
+            const totalPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
+            const winRate = trades.length > 0 ? (winningTrades.length / trades.length * 100) : 0;
+            const bestTrade = trades.length > 0 ? Math.max(...trades.map(t => t.pnl)) : 0;
+            const worstTrade = trades.length > 0 ? Math.min(...trades.map(t => t.pnl)) : 0;
+            const avgWin = winningTrades.length > 0 ? winningTrades.reduce((s,t) => s + t.pnl, 0) / winningTrades.length : 0;
+            const avgLoss = losingTrades.length > 0 ? losingTrades.reduce((s,t) => s + t.pnl, 0) / losingTrades.length : 0;
+            
+            return { totalPnL, winRate, bestTrade, worstTrade, avgWin, avgLoss, totalTrades: trades.length };
+        }
+        
+        // ============ RENDER UI ============
+        async function renderUI() {
+            const stats = calculateStats();
+            const totalValue = userData.balance + userData.positions.reduce((sum, p) => sum + (p.amount * (marketPrices[p.coin]?.price || p.entryPrice)), 0);
+            
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="top-bar">
+                    <div>
+                        <span class="logo">▲ ATHARVA CAPITAL</span>
+                        <span class="logo-sub"> by Atharva Darshanwar</span>
                     </div>
-                    <div class="order-row" style="font-size:9px; color:#787b86;">
-                        <span>Entry: $${trade.entryPrice?.toFixed(2)}</span>
-                        <span>Exit: $${trade.exitPrice?.toFixed(2)}</span>
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search 500+ coins... BTC, ETH, SOL..." autocomplete="off">
+                        <div class="search-results" id="searchResults"></div>
+                    </div>
+                    <div class="user-info">
+                        ${currentUser ? `
+                            <span class="balance">$${userData.balance.toFixed(2)}</span>
+                            <button class="topup-btn" onclick="topUpBalance()">+$1000</button>
+                            <button class="auth-btn" onclick="logout()">Logout</button>
+                        ` : `
+                            <button class="auth-btn" onclick="showLoginModal()">Login</button>
+                            <button class="auth-btn" onclick="showSignupModal()">Signup</button>
+                        `}
                     </div>
                 </div>
-            `).join('');
-        }
-        
-        // Replay mode
-        function openReplayModal() {
-            document.getElementById('replayModal').classList.add('active');
-        }
-        
-        function startReplay() {
-            const date = document.getElementById('replayDate').value;
-            const speed = document.getElementById('replaySpeed').value;
-            alert(`Replay mode started from ${date} at ${speed}x speed.\nHistorical data will replay on chart.`);
-            document.getElementById('replayModal').classList.remove('active');
-            if (tvWidget) {
-                // In real implementation, would fetch historical data and replay
-                tvWidget.chart().setResolution('1');
-            }
-        }
-        
-        function toggleFullscreen() {
-            const elem = document.documentElement;
-            if (!document.fullscreenElement) {
-                elem.requestFullscreen();
-            } else {
-                document.exitFullscreen();
-            }
-        }
-        
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData();
-            initTradingView();
-            fetchPrices();
-            setInterval(fetchPrices, 10000);
+                
+                <div class="main-layout">
+                    <div class="left-panel">
+                        <div class="panel-header">
+                            <h3>WATCHLIST</h3>
+                        </div>
+                        <div id="watchlistContainer">
+                            ${Object.keys(marketPrices).slice(0, 20).map(symbol => `
+                                <div class="watchlist-item ${selectedCoin === symbol ? 'active' : ''}" onclick="selectCoin('${symbol}')">
+                                    <div>
+                                        <div>${symbol.replace('USDT', '')}</div>
+                                        <div style="font-size:10px; color:#666;">${symbol}</div>
+                                    </div>
+                                    <div style="text-align:right">
+                                        <div>$${marketPrices[symbol]?.price?.toLocaleString() || '—'}</div>
+                                        <div class="${marketPrices[symbol]?.change >= 0 ? 'positive' : 'negative'}" style="font-size:10px;">
+                                            ${marketPrices[symbol]?.change >= 0 ? '+' : ''}${marketPrices[symbol]?.change?.toFixed(2) || '0'}%
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="center-panel">
+                        <div class="chart-header">
+                            <div>
+                                <span class="current-symbol">${selectedCoinName}/USDT</span>
+                                <span class="current-price" style="margin-left:15px;">$${currentPrice.toLocaleString()}</span>
+                                <span class="${marketPrices[selectedCoin]?.change >= 0 ? 'positive' : 'negative'}" style="margin-left:10px;">
+                                    ${marketPrices[selectedCoin]?.change >= 0 ? '+' : ''}${marketPrices[selectedCoin]?.change?.toFixed(2) || '0'}%
+                                </span>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <div class="timeframes">
+                                    ${['1m','5m','15m','1h','4h','1D'].map(tf => `
+                                        <button class="tf-btn ${currentInterval === tf ? 'active' : ''}" onclick="changeTimeframe('${tf}')">${tf}</button>
+                                    `).join('')}
+                                </div>
+                                <div class="indicator-dropdown">
+                                    <button class="indicator-btn" onclick="toggleIndicatorMenu()">📊 Indicators ▼</button>
+                                    <div class="indicator-menu" id="indicatorMenu">
+                                        <div class="indicator-search">
+                                            <input type="text" id="indicatorSearch" placeholder="Search indicators..." onkeyup="filterIndicators()">
+                                        </div>
+                                        <div class="indicator-list" id="indicatorList">
+                                            ${['RSI', 'MACD', 'EMA 9', 'EMA 20', 'EMA 50', 'Bollinger Bands', 'Volume', 'Stochastic', 'VWAP'].map(ind => `
+                                                <div class="indicator-option" onclick="addIndicator('${ind}')">${ind}</div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <div id="chart"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="right-panel">
+                        <div class="trade-tabs">
+                            <button class="trade-tab buy-tab active" onclick="setTradeSide('buy')">BUY</button>
+                            <button class="trade-tab sell-tab" onclick="setTradeSide('sell')">SELL</button>
+                        </div>
+                        
+                        <div class="trade-form">
+                            <div class="input-group">
+                                <label>Amount (${selectedCoinName})</label>
+                                <input type="number" id="tradeAmount" placeholder="0.00">
+                            </div>
+                            <div class="input-group">
+                                <label>Stop Loss (Optional)</label>
+                                <input type="number" id="stopLoss" placeholder="0.00">
+                            </div>
+                            <div class="input-group">
+                                <label>Take Profit (Optional)</label>
+                                <input type="number" id="takeProfit" placeholder="0.00">
+                            </div>
+                            <button class="execute-btn buy" id="executeBtn" onclick="executeTrade('buy')">BUY ${selectedCoinName}</button>
+                        </div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Total P&L</div>
+                                <div class="stat-value ${stats.totalPnL >= 0 ? 'positive' : 'negative'}">${stats.totalPnL >= 0 ? '+' : ''}$${stats.totalPnL.toFixed(2)}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Win Rate</div>
+                                <div class="stat-value">${stats.winRate.toFixed(1)}%</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Best Trade</div>
+                                <div class="stat-value positive">+$${stats.bestTrade.toFixed(2)}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Worst Trade</div>
+                                <div class="stat-value negative">$${stats.worstTrade.toFixed(2)}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Avg Win</div>
+                                <div class="stat-value positive">+$${stats.avgWin.toFixed(2)}</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Total Trades</div>
+                                <div class="stat-value">${stats.totalTrades}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">OPEN POSITIONS (${userData.positions.length})</div>
+                            <div id="positionsContainer">
+                                ${userData.positions.map(pos => `
+                                    <div class="position-item">
+                                        <div class="position-row">
+                                            <span>${pos.coinName}</span>
+                                            <span class="${(marketPrices[pos.coin]?.price || pos.entryPrice) >= pos.entryPrice ? 'positive' : 'negative'}">
+                                                ${((marketPrices[pos.coin]?.price || pos.entryPrice) - pos.entryPrice) * pos.amount >= 0 ? '+' : ''}$${(((marketPrices[pos.coin]?.price || pos.entryPrice) - pos.entryPrice) * pos.amount).toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div class="position-row" style="font-size:10px; color:#666;">
+                                            <span>Entry: $${pos.entryPrice.toFixed(2)}</span>
+                                            <span>Amt: ${pos.amount.toFixed(6)}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">TRADE HISTORY</div>
+                            <div id="historyContainer">
+                                ${userData.tradeHistory.slice(0, 10).map(trade => `
+                                    <div class="history-item">
+                                        <div class="history-row">
+                                            <span>${trade.coinName}</span>
+                                            <span class="${trade.pnl >= 0 ? 'positive' : 'negative'}">${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toFixed(2)}</span>
+                                        </div>
+                                        <div class="history-row" style="font-size:9px; color:#666;">
+                                            <span>Entry: $${trade.entryPrice?.toFixed(2)}</span>
+                                            <span>Exit: $${trade.exitPrice?.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="status-bar">
+                    <div><span class="live-dot"></span> Binance Live Data • WebSocket</div>
+                    <div>ATHARVA CAPITAL v3.0 | ${currentUser ? `Logged in as ${currentUser.email}` : 'Not logged in'}</div>
+                    <div>500+ Coins | Real-time P&L</div>
+                </div>
+                
+                <!-- Emotion Modal -->
+                <div class="modal" id="emotionModal">
+                    <div class="modal-content">
+                        <h3>🤔 How did you feel?</h3>
+                        <div class="emotion-buttons">
+                            <button class="emotion-btn" onclick="submitEmotion('Fear')">😨 Fear</button>
+                            <button class="emotion-btn" onclick="submitEmotion('Greed')">🤑 Greed</button>
+                            <button class="emotion-btn" onclick="submitEmotion('FOMO')">😍 FOMO</button>
+                            <button class="emotion-btn" onclick="submitEmotion('Confident')">😎 Confident</button>
+                            <button class="emotion-btn" onclick="submitEmotion('Calm')">😌 Calm</button>
+                            <button class="emotion-btn" onclick="submitEmotion('Revenge')">😤 Revenge</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Login Modal -->
+                <div class="modal" id="loginModal">
+                    <div class="modal-content">
+                        <h3>Login</h3>
+                        <div class="login-form">
+                            <input type="email" id="loginEmail" placeholder="Email">
+                            <input type="password" id="loginPassword" placeholder="Password">
+                            <button class="execute-btn buy" onclick="login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value)">Login</button>
+                        </div>
+                    </div>
+                </div>
+            `;
             
-            // Trade tab listeners
-            document.querySelectorAll('.trade-tab').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.trade-tab').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    const side = btn.dataset.trade;
-                    const execBtn = document.getElementById('executeBtn');
-                    execBtn.className = `execute-btn ${side}`;
-                    execBtn.innerHTML = `${side.toUpperCase()} ${document.getElementById('currentSymbol').innerText}`;
-                });
-            });
+            // Re-initialize chart
+            setTimeout(() => initChart(), 100);
             
-            // Order type listeners
-            document.querySelectorAll('.order-type-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.order-type-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    const limitField = document.getElementById('limitPriceField');
-                    limitField.style.display = btn.dataset.order === 'limit' ? 'block' : 'none';
-                });
-            });
+            // Setup search
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
             
-            // Drawing tools
-            document.querySelectorAll('.draw-btn[data-tool]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.draw-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    activeDrawingTool = btn.dataset.tool;
-                    applyDrawingTool(activeDrawingTool);
-                });
-            });
-            
-            // Indicators
-            document.querySelectorAll('.indicator-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    btn.classList.toggle('active');
-                    addIndicator(btn.dataset.indicator);
-                });
-            });
-            
-            // Timeframes
-            document.querySelectorAll('.tf-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentInterval = btn.dataset.tf;
-                    if (tvWidget) {
-                        tvWidget.setResolution(currentInterval);
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value;
+                    if (query.length < 1) {
+                        searchResults.classList.remove('show');
+                        return;
+                    }
+                    const results = searchCoins(query);
+                    if (results.length > 0) {
+                        searchResults.innerHTML = results.map(coin => `
+                            <div class="search-result-item" onclick="selectCoin('${coin.symbol}')">
+                                <strong>${coin.symbol.replace('USDT', '')}</strong>
+                                <span style="color:#666; font-size:11px;"> ${coin.symbol}</span>
+                            </div>
+                        `).join('');
+                        searchResults.classList.add('show');
+                    } else {
+                        searchResults.innerHTML = '<div class="search-result-item">No results found</div>';
+                        searchResults.classList.add('show');
                     }
                 });
-            });
-            
-            // Layouts
-            document.querySelectorAll('.layout-btn[data-layout]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    changeLayout(parseInt(btn.dataset.layout));
+                
+                document.addEventListener('click', (e) => {
+                    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                        searchResults.classList.remove('show');
+                    }
                 });
+            }
+        }
+        
+        // ============ HELPER FUNCTIONS ============
+        window.selectCoin = async (symbol) => {
+            selectedCoin = symbol;
+            selectedCoinName = symbol.replace('USDT', '');
+            await fetchChartData();
+            renderUI();
+        };
+        
+        window.changeTimeframe = (tf) => {
+            currentInterval = tf;
+            fetchChartData();
+            renderUI();
+        };
+        
+        window.toggleIndicatorMenu = () => {
+            const menu = document.getElementById('indicatorMenu');
+            if (menu) menu.classList.toggle('show');
+        };
+        
+        window.filterIndicators = () => {
+            const search = document.getElementById('indicatorSearch')?.value.toLowerCase();
+            const items = document.querySelectorAll('.indicator-option');
+            items.forEach(item => {
+                if (item.textContent.toLowerCase().includes(search)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
             });
+        };
+        
+        window.setTradeSide = (side) => {
+            const buyTab = document.querySelector('.buy-tab');
+            const sellTab = document.querySelector('.sell-tab');
+            const execBtn = document.getElementById('executeBtn');
             
-            // Execute trade
-            document.getElementById('executeBtn').addEventListener('click', executeTrade);
+            if (side === 'buy') {
+                buyTab.classList.add('active');
+                sellTab.classList.remove('active');
+                execBtn.className = 'execute-btn buy';
+                execBtn.innerHTML = `BUY ${selectedCoinName}`;
+                execBtn.onclick = () => executeTrade('buy');
+            } else {
+                sellTab.classList.add('active');
+                buyTab.classList.remove('active');
+                execBtn.className = 'execute-btn sell';
+                execBtn.innerHTML = `SELL ${selectedCoinName}`;
+                execBtn.onclick = () => executeTrade('sell');
+            }
+        };
+        
+        window.showLoginModal = () => {
+            document.getElementById('loginModal').classList.add('show');
+            setTimeout(() => {
+                const close = () => document.getElementById('loginModal').classList.remove('show');
+                document.getElementById('loginModal').querySelector('.modal-content').addEventListener('click', (e) => e.stopPropagation());
+                document.getElementById('loginModal').addEventListener('click', close);
+            }, 100);
+        };
+        
+        window.showSignupModal = () => {
+            const email = prompt('Enter email for signup:');
+            const password = prompt('Enter password:');
+            if (email && password) signup(email, password);
+        };
+        
+        window.submitEmotion = (emotion) => {
+            userData.emotions.push({ emotion, timestamp: new Date().toISOString() });
+            saveUserData();
+            document.getElementById('emotionModal').classList.remove('show');
+        };
+        
+        // ============ INIT ============
+        async function init() {
+            await loadAllCoins();
+            await fetchPrices();
+            setInterval(fetchPrices, 5000);
+            renderUI();
             
-            // Replay
-            document.getElementById('replayBtn').addEventListener('click', openReplayModal);
-            document.getElementById('startReplay').addEventListener('click', startReplay);
-            document.getElementById('closeModal').addEventListener('click', () => {
-                document.getElementById('replayModal').classList.remove('active');
+            auth.onAuthStateChanged(async (user) => {
+                currentUser = user;
+                if (user) {
+                    await loadUserData(user.uid);
+                } else {
+                    userData = { balance: 10000, positions: [], tradeHistory: [], emotions: [] };
+                }
+                renderUI();
             });
-            
-            renderPositions();
-            renderHistory();
-        });
+        }
+        
+        init();
     </script>
 </body>
 </html>
