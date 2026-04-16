@@ -174,4 +174,32 @@ const App: React.FC = () => {
                 ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
               <div className={`text-sm ${tickers[selectedSymbol]?.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {tickers[selectedSymbol]?.change24
+                {tickers[selectedSymbol]?.change24h >= 0 ? '+' : ''}{tickers[selectedSymbol]?.change24h?.toFixed(2)}%
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1">
+            <TradingChart 
+              klines={klines}
+              lastKline={lastKline}
+              symbol={selectedSymbol}
+              interval={selectedInterval}
+              currentPrice={currentPrice}
+            />
+          </div>
+        </div>
+
+        {/* Right Panel - Trading (Coming Soon) */}
+        <div className="w-96 bg-gray-800 border-l border-gray-700 p-4">
+          <div className="text-center text-gray-400 mt-20">
+            <p>Trading Panel Coming Soon</p>
+            <p className="text-sm mt-2">Buy/Sell orders, Positions, Stop Loss/Take Profit</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;
