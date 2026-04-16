@@ -1,43 +1,312 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>TheAtharvaCapital</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheAtharvaCapital | Crypto Trading Terminal</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: #0a0a0f;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: system-ui;
         }
-        .box {
+
+        /* Landing Page Container */
+        .landing-container {
             text-align: center;
+            padding: 40px 20px;
+            max-width: 600px;
+            margin: 0 auto;
         }
-        h1 {
-            color: #4ade80;
+
+        /* Logo Animation */
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #4ade80, #059669);
+            border-radius: 28px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: float 3s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo span {
             font-size: 48px;
+            font-weight: bold;
+            color: white;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Title */
+        h1 {
+            font-size: 48px;
+            background: linear-gradient(135deg, #4ade80, #a3e635);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             margin-bottom: 16px;
+            font-weight: 700;
         }
-        p {
-            color: #9ca3af;
+
+        .tagline {
             font-size: 20px;
+            color: #9ca3af;
+            margin-bottom: 32px;
         }
-        .status {
-            color: #22c55e;
-            margin-top: 30px;
+
+        /* Features Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: #4ade80;
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        /* Launch Button */
+        .launch-btn {
+            background: linear-gradient(135deg, #4ade80, #059669);
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+            margin: 20px 0;
+        }
+
+        .launch-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a0f;
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #1a1a2e;
+            border-top-color: #4ade80;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #4ade80;
+            margin-top: 20px;
             font-size: 14px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            color: #4b5563;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            h1 { font-size: 32px; }
+            .features { grid-template-columns: 1fr; }
+            .launch-btn { padding: 12px 32px; font-size: 16px; }
         }
     </style>
 </head>
 <body>
-    <div class="box">
+
+    <!-- Landing Page -->
+    <div id="landing" class="landing-container">
+        <div class="logo" onclick="launchApp()">
+            <span>A</span>
+        </div>
+        
         <h1>TheAtharvaCapital</h1>
-        <p>Crypto Trading Terminal</p>
-        <p>🚀 Live & Working!</p>
-        <div class="status">✅ Website is active</div>
+        <p class="tagline">Professional Crypto Trading Terminal</p>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Real-time Charts</div>
+                <div class="feature-desc">Live candlestick charts with indicators</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <div class="feature-title">Virtual Trading</div>
+                <div class="feature-desc">$10,000 demo balance to practice</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <div class="feature-title">Live Data</div>
+                <div class="feature-desc">Real-time Binance price feeds</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Fast Execution</div>
+                <div class="feature-desc">Instant order placement</div>
+            </div>
+        </div>
+
+        <button class="launch-btn" onclick="launchApp()">
+            🚀 Launch Trading Terminal
+        </button>
+
+        <div class="footer">
+            ⚡ Simulation Only | No Real Money | Powered by Binance
+        </div>
     </div>
+
+    <!-- Loading Screen -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading Trading Terminal...</div>
+    </div>
+
+    <!-- React App Container -->
+    <div id="root" style="display: none;"></div>
+
+    <script>
+        function launchApp() {
+            // Hide landing page
+            document.getElementById('landing').style.display = 'none';
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'flex';
+            
+            // Show root container
+            document.getElementById('root').style.display = 'block';
+            
+            // Load React app dynamically
+            loadReactApp();
+        }
+
+        function loadReactApp() {
+            // Check if React app scripts already loaded
+            if (document.getElementById('react-scripts')) {
+                showReactApp();
+                return;
+            }
+
+            // Create main script tag for React app
+            const mainScript = document.createElement('script');
+            mainScript.id = 'react-scripts';
+            mainScript.src = './static/js/main.js';
+            mainScript.onload = () => showReactApp();
+            mainScript.onerror = () => {
+                // If React app not found, show iframe fallback
+                loadIframeFallback();
+            };
+            document.body.appendChild(mainScript);
+
+            // Load CSS
+            const mainCss = document.createElement('link');
+            mainCss.rel = 'stylesheet';
+            mainCss.href = './static/css/main.css';
+            document.head.appendChild(mainCss);
+        }
+
+        function showReactApp() {
+            // Hide loading
+            document.getElementById('loading').style.display = 'none';
+            
+            // Root container already visible
+            document.getElementById('root').style.display = 'block';
+        }
+
+        function loadIframeFallback() {
+            // Fallback: Load from GitHub Pages
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.src = 'https://selfdevelope09-hue.github.io/theatharvacapital-terminal/app.html';
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('root').innerHTML = '';
+            document.getElementById('root').appendChild(iframe);
+            document.getElementById('root').style.display = 'block';
+        }
+
+        // Auto-check if React app exists on page load
+        window.addEventListener('load', () => {
+            // Check if we're already at /app path
+            if (window.location.pathname === '/app' || window.location.search.includes('mode=app')) {
+                launchApp();
+            }
+        });
+    </script>
 </body>
 </html>
